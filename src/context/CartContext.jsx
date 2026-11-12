@@ -176,6 +176,7 @@ export const CartProvider = ({ children }) => {
   }, [toast]);
 
   const value = {
+    cartState,
     cartId: cartState.cartId,
     items: cartState.items,
     totalItems: cartState.totalItems,

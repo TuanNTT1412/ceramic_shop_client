@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useCart } from '../../context';
 import { MemberDropdown } from './MemberDropdown';
 import { ROUTES } from '../../constants';
@@ -8,6 +8,7 @@ export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const { totalItems } = useCart();
 
@@ -17,14 +18,24 @@ export const Navbar = () => {
     location.pathname.startsWith('/products') ||
     location.pathname.startsWith('/product');
 
+  // Gạch chân màu cam dưới chữ khi active, không dùng viên thuốc cam nền
   const navLinkClass = ({ isActive }) =>
     isActive
-      ? 'px-3.5 py-1.5 rounded-full bg-[#c2652a] text-white shadow-sm font-semibold transition-colors'
-      : 'px-3 py-1.5 rounded-full text-[#524337] hover:text-[#c2652a] hover:bg-[#faefe4] transition-colors';
+      ? 'relative py-2 px-3 text-[#26201b] font-semibold border-b-2 border-[#c2652a] transition-all'
+      : 'relative py-2 px-3 text-[#524337] hover:text-[#26201b] border-b-2 border-transparent hover:border-[#c2652a]/40 transition-all font-medium';
 
   const collectionLinkClass = isCollectionActive
-    ? 'px-3.5 py-1.5 rounded-full bg-[#c2652a] text-white shadow-sm font-semibold transition-colors'
-    : 'px-3 py-1.5 rounded-full text-[#524337] hover:text-[#c2652a] hover:bg-[#faefe4] transition-colors';
+    ? 'relative py-2 px-3 text-[#26201b] font-semibold border-b-2 border-[#c2652a] transition-all'
+    : 'relative py-2 px-3 text-[#524337] hover:text-[#26201b] border-b-2 border-transparent hover:border-[#c2652a]/40 transition-all font-medium';
+
+  const mobileNavLinkClass = ({ isActive }) =>
+    isActive
+      ? 'py-2 px-3 text-[#26201b] font-semibold border-l-2 border-[#c2652a] bg-[#f0e7dc]/40 transition-all'
+      : 'py-2 px-3 text-[#524337] hover:text-[#26201b] transition-all font-medium';
+
+  const mobileCollectionLinkClass = isCollectionActive
+    ? 'py-2 px-3 text-[#26201b] font-semibold border-l-2 border-[#c2652a] bg-[#f0e7dc]/40 transition-all'
+    : 'py-2 px-3 text-[#524337] hover:text-[#26201b] transition-all font-medium';
 
   return (
     <header className="sticky top-0 z-50 bg-[#faf6f0]/95 backdrop-blur-md border-b border-[#e6dcce] transition-all">
@@ -82,7 +93,7 @@ export const Navbar = () => {
           </div>
         </Link>
 
-        {/* Danh Mục Điều Hướng Giữa (Navigation Links: Trang Chủ, Bộ Sưu Tập, Lịch Sử Đơn Hàng, Thanh Toán) */}
+        {/* Danh Mục Điều Hướng Giữa (Navigation Links: Trang Chủ, Bộ Sưu Tập, Lịch Sử Đơn Hàng, Đặt Đơn Hàng) */}
         <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 text-xs font-medium">
           <NavLink to={ROUTES.HOME} end className={navLinkClass}>
             Trang Chủ
@@ -94,18 +105,20 @@ export const Navbar = () => {
             Lịch Sử Đơn Hàng
           </NavLink>
           <NavLink to={ROUTES.CHECKOUT} className={navLinkClass}>
-            Thanh Toán
+            Đặt Đơn Hàng
           </NavLink>
         </nav>
 
         {/* Cụm Thao Tác Phải (Giỏ hàng, Hội viên, Mobile Toggle) */}
         <div className="flex items-center space-x-2.5">
-          {/* Nút Giỏ Hàng (Badge đếm động từ CartContext) */}
+          {/* Nút Giỏ Hàng (chỉ icon và số đếm, không để chữ Giỏ Hàng) */}
           <Link
             to={ROUTES.CART}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#c2652a] text-white hover:bg-[#aa541e] transition-colors text-xs font-medium shadow-sm"
+            title="Giỏ hàng"
+            aria-label="Giỏ hàng"
+            className="relative flex items-center justify-center w-9 h-9 rounded-full border border-[#ded0c0] bg-white text-[#26201b] hover:border-[#c2652a] hover:text-[#c2652a] transition-all shadow-xs group"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -113,9 +126,8 @@ export const Navbar = () => {
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
               />
             </svg>
-            <span className="hidden sm:inline">Giỏ Hàng</span>
-            <span className="w-4 h-4 rounded-full bg-white text-[#c2652a] text-[10px] font-bold flex items-center justify-center leading-none">
-              {totalItems || 3}
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#c2652a] text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
+              {totalItems || 0}
             </span>
           </Link>
 
@@ -148,30 +160,30 @@ export const Navbar = () => {
               to={ROUTES.HOME}
               end
               onClick={() => setIsMobileMenuOpen(false)}
-              className={navLinkClass}
+              className={mobileNavLinkClass}
             >
               Trang Chủ
             </NavLink>
             <NavLink
               to={ROUTES.COLLECTION}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={collectionLinkClass}
+              className={mobileCollectionLinkClass}
             >
               Bộ Sưu Tập Tác Phẩm
             </NavLink>
             <NavLink
               to={ROUTES.MY_ORDERS}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={navLinkClass}
+              className={mobileNavLinkClass}
             >
               Lịch Sử Đơn Hàng
             </NavLink>
             <NavLink
               to={ROUTES.CHECKOUT}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={navLinkClass}
+              className={mobileNavLinkClass}
             >
-              Thanh Toán
+              Đặt Đơn Hàng
             </NavLink>
 
             {isAuthenticated ? (
@@ -181,7 +193,7 @@ export const Navbar = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block px-3.5 py-2 rounded-md text-[#524337] hover:bg-[#faefe4]"
                 >
-                  Hồ Sơ Cá Nhân
+                  Quản Lý Hồ Sơ Cá Nhân
                 </Link>
                 <Link
                   to={ROUTES.MY_ORDERS}
@@ -201,9 +213,10 @@ export const Navbar = () => {
                 )}
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     setIsMobileMenuOpen(false);
-                    logout();
+                    await logout();
+                    navigate(ROUTES.LOGIN);
                   }}
                   className="w-full text-left px-3.5 py-2 text-rose-600 hover:bg-rose-50 rounded-md"
                 >

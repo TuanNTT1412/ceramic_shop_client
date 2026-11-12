@@ -1,165 +1,128 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart, useToast } from '../../context';
 import { Pagination } from '../../components/shared';
 import { ROUTES } from '../../constants';
-
-// Dữ liệu danh sách 9 tác phẩm gốm mộc chuẩn khớp Stitch
-const INITIAL_PRODUCTS = [
-  {
-    id: 1,
-    tag: 'ĐỘC BẢN 01/01',
-    category1: 'ẤM TRÀ THẠCH LỰU',
-    category2: 'MEN TRO VỎ TRẤU',
-    categoryGroup: 'Ấm Chén Trà Đạo',
-    glaze: 'Men Tro Củi Tự Nhiên',
-    artisan: 'nnut',
-    title: 'Ấm Trà Sa Thạch Vị Cố 220ml',
-    desc: 'Cốt đất sét thô duyên hải nung liên tục 36 giờ bằng củi nhãn, lòng ấm thoáng khí giúp nước trà tròn vị.',
-    price: '1.250.000đ',
-    priceNumber: 1250000,
-    image: '/images/product-1.jpg',
-  },
-  {
-    id: 2,
-    tag: 'MẺ LÒ SỐ 04',
-    category1: 'BÌNH HOA ĐIÊU KHẮC',
-    category2: 'MEN SA MẠC CỔ',
-    categoryGroup: 'Bình Hoa Điêu Khắc',
-    glaze: 'Men Sa Thạch Sa Mạc',
-    artisan: 'tuan',
-    title: 'Bình Hoa Dáng Cổ - Lan Vàng Hồ Điệp',
-    desc: 'Họa tiết hoa phong lan vàng uốn lượn tinh tế trên cốt gốm men trắng mộc sa thạch.',
-    price: '2.180.000đ',
-    priceNumber: 2180000,
-    image: '/images/hero-vase.jpg',
-  },
-  {
-    id: 3,
-    tag: 'BỘ 4 CHÉN KHÁCH',
-    category1: 'TRÀ ĐẠO',
-    category2: 'HỎA BIẾN 1300°C',
-    categoryGroup: 'Ấm Chén Trà Đạo',
-    glaze: 'Men Hỏa Biến Đất Nung',
-    artisan: 'all',
-    title: 'Tứ Chén Mộc Hỏa Biến Tro Tự Nhiên',
-    desc: 'Lớp men tro rơi tự nhiên bám cháy tạo vân rêu phong kỳ ảo, cầm chắc tay và giữ nhiệt tuyệt hảo.',
-    price: '680.000đ',
-    priceNumber: 680000,
-    image: '/images/cat-tra-dao.jpg',
-  },
-  {
-    id: 4,
-    tag: 'ĐỘC BẢN 01/01',
-    category1: 'BÀN ĂN MỘC',
-    category2: 'MEN CỐT RẠN MỘC',
-    categoryGroup: 'Bát Đĩa Bàn Tiệc Mộc',
-    glaze: 'Men Cốt Rạn Mộc',
-    artisan: 'chudau',
-    title: 'Đĩa Tiệc Sa Thạch Rạn Cốt Vàng Cát',
-    desc: 'Cốt đất sét thô duyên hải truyền thống, viền đĩa lượn nhấp nhô mô phỏng những triền cát sa mạc.',
-    price: '540.000đ',
-    priceNumber: 540000,
-    image: '/images/cat-bat-dia.jpg',
-  },
-  {
-    id: 5,
-    tag: 'TRIỆN TAY NNƯT',
-    category1: 'BÌNH HOA ĐIÊU KHẮC',
-    category2: 'HỌA KHẮC ĐỘC BẢN',
-    categoryGroup: 'Bình Hoa Điêu Khắc',
-    glaze: 'Men Sa Thạch Sa Mạc',
-    artisan: 'nnut',
-    title: 'Tác Phẩm Khắc Họa Bọ Ngựa Cành Thu',
-    desc: 'Khắc họa sinh vật bọ ngựa tự nhiên trên dáng bình sa thạch mộc mạc, đường nét sắc sảo độc bản.',
-    price: '2.600.000đ',
-    priceNumber: 2600000,
-    image: '/images/product-2.jpg',
-  },
-  {
-    id: 6,
-    tag: 'BỘ SƯU TẬP THU',
-    category1: 'TRÀ ĐẠO',
-    category2: 'MEN TRO SA MẠC',
-    categoryGroup: 'Ấm Chén Trà Đạo',
-    glaze: 'Men Tro Củi Tự Nhiên',
-    artisan: 'tuan',
-    title: 'Bát Trà Đạo Chawan Men Tro Xoay Vòng',
-    desc: 'Thiết kế lòng rộng chuyên dụng đánh matcha hay trà mạn sương mù, gờ miệng uốn mềm giữ hương.',
-    price: '890.000đ',
-    priceNumber: 890000,
-    image: '/images/hero-cup.jpg',
-  },
-  {
-    id: 7,
-    tag: 'TIỂU CẢNH',
-    category1: 'BÌNH ĐIÊU KHẮC',
-    category2: 'MEN TRẮNG SA MẠC',
-    categoryGroup: 'Tượng Thiền & Cảnh Gốm',
-    glaze: 'Men Vàng Cát Cổ',
-    artisan: 'all',
-    title: 'Bình Hoa Chim Ruồi & Hoa Chuông',
-    desc: 'Dành riêng cho việc cắm một nhánh cây dại hay hoa cỏ lau khô theo tinh thần trà thất thiền định.',
-    price: '380.000đ',
-    priceNumber: 380000,
-    image: '/images/cat-binh-hoa.jpg',
-  },
-  {
-    id: 8,
-    tag: 'BỘ 6 CHIẾC',
-    category1: 'BÀN TIỆC MỘC',
-    category2: 'MEN VÀNG CÁT CỔ',
-    categoryGroup: 'Bát Đĩa Bàn Tiệc Mộc',
-    glaze: 'Men Vàng Cát Cổ',
-    artisan: 'chudau',
-    title: 'Tác Phẩm Tôm Thủy Mặc Độc Bản',
-    desc: 'Chế tác từ đất sông Thu Bồn đãi sạch sạn vôi, giữ độ ẩm thức ăn gấp hai lần bát đĩa công nghiệp.',
-    price: '720.000đ',
-    priceNumber: 720000,
-    image: '/images/product-3.jpg',
-  },
-  {
-    id: 9,
-    tag: 'ĐỘC BẢN 01/01',
-    category1: 'TRỮ TRÀ CỔ',
-    category2: 'KHỬ OXY 1300°C',
-    categoryGroup: 'Ấm Chén Trà Đạo',
-    glaze: 'Men Hỏa Biến Đất Nung',
-    artisan: 'nnut',
-    title: 'Bình Dáng Tròn Chùa Một Cột Dát Vàng',
-    desc: 'Nắp mài thủ công khít tuyệt đối, cốt gốm xốp vi thể giúp trà cổ thụ lên hương tự nhiên sau nhiều năm.',
-    price: '1.850.000đ',
-    priceNumber: 1850000,
-    image: '/images/product-4.jpg',
-  },
-];
+import { categoryApi, productApi } from '../../api';
 
 export const CollectionPage = () => {
+  const [products, setProducts] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [searchKeywords, setSearchKeywords] = useState('');
   const [priceRange, setPriceRange] = useState(2600000);
   const [selectedForm, setSelectedForm] = useState('all');
+  const [selectedGlazes, setSelectedGlazes] = useState([]);
+  const [selectedTechniques, setSelectedTechniques] = useState([]);
+  const [isCertifiedOnly, setIsCertifiedOnly] = useState(false);
   const [artisanFilter, setArtisanFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [favorites, setFavorites] = useState({});
 
   const { addToCart } = useCart();
   const toast = useToast();
 
+  // Tải danh mục và sản phẩm thật từ Backend
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCatalog = async () => {
+      setIsLoading(true);
+      try {
+        // 1. Tải danh mục thật
+        const catRes = await categoryApi.getCategories();
+        if (isMounted && catRes?.data && Array.isArray(catRes.data) && catRes.data.length > 0) {
+          setDbCategories(catRes.data);
+        }
+
+        // 2. Tải sản phẩm thật từ Backend
+        const prodRes = await productApi.getProducts({ limit: 50 });
+        if (
+          isMounted &&
+          prodRes?.data?.products &&
+          Array.isArray(prodRes.data.products) &&
+          prodRes.data.products.length > 0
+        ) {
+          const fallbackImages = [
+            '/images/product-1.jpg',
+            '/images/hero-vase.jpg',
+            '/images/cat-tra-dao.jpg',
+            '/images/cat-bat-dia.jpg',
+            '/images/product-2.jpg',
+          ];
+
+          const mapped = prodRes.data.products.map((p, idx) => {
+            const primaryVariant = p.variants?.[0] || {};
+            const imgFromDb =
+              primaryVariant.images?.find((img) => img.isPrimary)?.imageUrl ||
+              primaryVariant.images?.[0]?.imageUrl;
+
+            // Nếu ảnh DB là example.com hoặc không khả dụng, dùng ảnh gốm mộc Sahara
+            const validImage =
+              imgFromDb && !imgFromDb.includes('example.com')
+                ? imgFromDb
+                : fallbackImages[idx % fallbackImages.length];
+
+            const priceNum = primaryVariant.price || 0;
+
+            return {
+              id: p.id,
+              tag:
+                primaryVariant.stockQuantity > 0
+                  ? `CÒN ${primaryVariant.stockQuantity} TÁC PHẨM`
+                  : 'HẾT HÀNG TẠI XƯỞNG',
+              category1: p.category?.name?.toUpperCase() || 'GỐM MỘC',
+              category2: primaryVariant.variantName?.toUpperCase() || 'TIÊU CHUẨN',
+              categoryGroup: p.category?.name || 'Tác Phẩm Gốm',
+              glaze: p.category?.name || 'Men Tro Tự Nhiên',
+              artisan: 'all',
+              title: p.name,
+              desc:
+                p.description ||
+                'Cốt đất sét thô nung nhiệt độ cao 1300°C bằng củi tự nhiên tại xưởng Sahara Atelier.',
+              price: `${priceNum.toLocaleString('vi-VN')}₫`,
+              priceNumber: priceNum,
+              image: validImage,
+              raw: p,
+            };
+          });
+
+          setProducts(mapped);
+        }
+      } catch (err) {
+        console.warn('Lỗi kết nối máy chủ, hiển thị danh sách dự phòng:', err?.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchCatalog();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Xử lý nút Thêm vào giỏ hàng
-  const handleAddToCart = (product) => {
-    addToCart(product, 1);
-    toast.success(`Đã thêm "${product.title}" vào giỏ hàng!`);
+  const handleAddToCart = async (product) => {
+    const variantId = product.raw?.variants?.[0]?.id;
+    if (variantId) {
+      await addToCart(variantId, 1);
+    } else {
+      toast.success(`Đã thêm "${product.title}" vào giỏ hàng!`);
+    }
   };
 
-  // Xử lý nút Yêu thích
-  const handleToggleFavorite = (product) => {
-    const nextState = !favorites[product.id];
-    setFavorites((prev) => ({ ...prev, [product.id]: nextState }));
-    if (nextState) {
-      toast.success(`Đã lưu "${product.title}" vào danh sách yêu thích!`);
-    } else {
-      toast.info(`Đã gỡ "${product.title}" khỏi danh sách yêu thích.`);
-    }
+  // Toggle bộ lọc men
+  const toggleGlaze = (glazeName) => {
+    setSelectedGlazes((prev) =>
+      prev.includes(glazeName) ? prev.filter((g) => g !== glazeName) : [...prev, glazeName]
+    );
+  };
+
+  // Toggle kỹ thuật lò
+  const toggleTechnique = (tech) => {
+    setSelectedTechniques((prev) =>
+      prev.includes(tech) ? prev.filter((t) => t !== tech) : [...prev, tech]
+    );
   };
 
   // Reset toàn bộ bộ lọc
@@ -167,6 +130,9 @@ export const CollectionPage = () => {
     setSearchKeywords('');
     setPriceRange(2600000);
     setSelectedForm('all');
+    setSelectedGlazes([]);
+    setSelectedTechniques([]);
+    setIsCertifiedOnly(false);
     setArtisanFilter('all');
     setCurrentPage(1);
     toast.info('Đã thiết lập lại toàn bộ bộ lọc.');
@@ -174,15 +140,15 @@ export const CollectionPage = () => {
 
   // Lọc sản phẩm
   const filteredProducts = useMemo(() => {
-    return INITIAL_PRODUCTS.filter((item) => {
+    return products.filter((item) => {
       // 1. Lọc theo từ khóa tìm kiếm
       if (searchKeywords.trim()) {
         const query = searchKeywords.toLowerCase();
         const matchTitle = item.title.toLowerCase().includes(query);
         const matchDesc = item.desc.toLowerCase().includes(query);
         const matchCat =
-          item.category1.toLowerCase().includes(query) ||
-          item.category2.toLowerCase().includes(query);
+          (item.category1 && item.category1.toLowerCase().includes(query)) ||
+          (item.category2 && item.category2.toLowerCase().includes(query));
         if (!matchTitle && !matchDesc && !matchCat) return false;
       }
 
@@ -191,19 +157,42 @@ export const CollectionPage = () => {
         return false;
       }
 
-      // 3. Lọc theo khoảng giá
+      // 3. Lọc theo dòng men (nếu có chọn)
+      if (selectedGlazes.length > 0 && !selectedGlazes.includes(item.glaze)) {
+        return false;
+      }
+
+      // 4. Lọc theo khoảng giá
       if (item.priceNumber > priceRange) {
         return false;
       }
 
-      // 4. Lọc theo nghệ nhân
+      // 5. Lọc theo nghệ nhân
       if (artisanFilter !== 'all' && item.artisan !== artisanFilter) {
         return false;
       }
 
       return true;
     });
-  }, [searchKeywords, selectedForm, priceRange, artisanFilter]);
+  }, [products, searchKeywords, selectedForm, selectedGlazes, priceRange, artisanFilter]);
+
+  // Quy chuẩn phân trang: 9 sản phẩm / trang
+  // <= 9: Không hiển thị | > 9 (đến 18): Hiện trang 1, 2 | > 18 (đến 27): Hiện trang 1, 2, 3
+  const ITEMS_PER_PAGE = 9;
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+
+  // Reset về trang 1 nếu bộ lọc làm giảm số trang
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
+  // Danh sách tác phẩm cắt theo trang hiện tại
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
 
   return (
     <div className="w-full bg-[#faf6f0] text-[#2b241e] font-sans antialiased flex flex-col selection:bg-[#c2652a]/20 selection:text-[#c2652a]">
@@ -319,71 +308,25 @@ export const CollectionPage = () => {
             <div className="bg-white p-4 rounded-xl border border-[#ebe1d5] shadow-xs space-y-3">
               <div className="flex items-center justify-between text-xs font-semibold text-[#26201b]">
                 <span>Dòng Men Tự Nhiên</span>
-                <span className="text-[10px] text-[#a69280] font-normal">5 sắc men</span>
               </div>
               <div className="space-y-2 text-xs text-[#524337]">
-                <label className="flex items-center justify-between cursor-pointer">
-                  <span className="flex items-center gap-2">
+                {[
+                  'Men Tro Củi Tự Nhiên',
+                  'Men Sa Thạch Sa Mạc',
+                  'Men Hỏa Biến Đất Nung',
+                  'Men Cốt Rạn Mộc',
+                  'Men Vàng Cát Cổ',
+                ].map((glazeName) => (
+                  <label key={glazeName} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      defaultChecked
+                      checked={selectedGlazes.includes(glazeName)}
+                      onChange={() => toggleGlaze(glazeName)}
                       className="accent-[#c2652a] rounded-sm"
                     />
-                    Men Tro Củi Tự Nhiên
-                  </span>
-                  <span className="text-[10px] bg-[#f5ede2] text-[#8a7260] px-1.5 py-0.5 rounded-full">
-                    18
-                  </span>
-                </label>
-                <label className="flex items-center justify-between cursor-pointer">
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="accent-[#c2652a] rounded-sm"
-                    />
-                    Men Sa Thạch Sa Mạc
-                  </span>
-                  <span className="text-[10px] bg-[#f5ede2] text-[#8a7260] px-1.5 py-0.5 rounded-full">
-                    12
-                  </span>
-                </label>
-                <label className="flex items-center justify-between cursor-pointer">
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="accent-[#c2652a] rounded-sm"
-                    />
-                    Men Hỏa Biến Đất Nung
-                  </span>
-                  <span className="text-[10px] bg-[#f5ede2] text-[#8a7260] px-1.5 py-0.5 rounded-full">
-                    09
-                  </span>
-                </label>
-                <label className="flex items-center justify-between cursor-pointer">
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="accent-[#c2652a] rounded-sm"
-                    />
-                    Men Cốt Rạn Mộc
-                  </span>
-                  <span className="text-[10px] bg-[#f5ede2] text-[#8a7260] px-1.5 py-0.5 rounded-full">
-                    05
-                  </span>
-                </label>
-                <label className="flex items-center justify-between cursor-pointer">
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="accent-[#c2652a] rounded-sm"
-                    />
-                    Men Vàng Cát Cổ
-                  </span>
-                  <span className="text-[10px] bg-[#f5ede2] text-[#8a7260] px-1.5 py-0.5 rounded-full">
-                    04
-                  </span>
-                </label>
+                    <span>{glazeName}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -402,16 +345,18 @@ export const CollectionPage = () => {
                 }`}
               >
                 <span>Tất cả dáng gốm</span>
-                <span className="text-[10px] opacity-75">{INITIAL_PRODUCTS.length}</span>
               </button>
-              {[
-                { name: 'Ấm Chén Trà Đạo', count: 16 },
-                { name: 'Bình Hoa Điêu Khắc', count: 14 },
-                { name: 'Bát Đĩa Bàn Tiệc Mộc', count: 11 },
-                { name: 'Tượng Thiền & Cảnh Gốm', count: 7 },
-              ].map((item) => (
+              {(dbCategories.length > 0
+                ? dbCategories
+                : [
+                    { id: 'cat-1', name: 'Ấm Chén Trà Đạo' },
+                    { id: 'cat-2', name: 'Bình Hoa Điêu Khắc' },
+                    { id: 'cat-3', name: 'Bát Đĩa Bàn Tiệc Mộc' },
+                    { id: 'cat-4', name: 'Tượng Thiền & Cảnh Gốm' },
+                  ]
+              ).map((item) => (
                 <button
-                  key={item.name}
+                  key={item.id || item.name}
                   type="button"
                   onClick={() => setSelectedForm(item.name)}
                   className={`w-full flex items-center justify-between p-2 rounded-lg text-xs transition-all ${
@@ -421,7 +366,6 @@ export const CollectionPage = () => {
                   }`}
                 >
                   <span>{item.name}</span>
-                  <span className="text-[10px] opacity-75">{item.count}</span>
                 </button>
               ))}
             </div>
@@ -432,30 +376,21 @@ export const CollectionPage = () => {
                 Kỹ Thuật Lò & Cốt Đất
               </h4>
               <div className="space-y-2 text-xs text-[#524337]">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="accent-[#c2652a] rounded-sm"
-                  />
-                  Lò củi truyền thống khử oxy 1300°C
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="accent-[#c2652a] rounded-sm"
-                  />
-                  Đất sa thạch ủ ẩm trên 6 tháng
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="accent-[#c2652a] rounded-sm"
-                  />
-                  Vuốt tay thủ công bàn xoay gỗ
-                </label>
+                {[
+                  'Lò củi truyền thống khử oxy 1300°C',
+                  'Đất sa thạch ủ ẩm trên 6 tháng',
+                  'Vuốt tay thủ công bàn xoay gỗ',
+                ].map((tech) => (
+                  <label key={tech} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedTechniques.includes(tech)}
+                      onChange={() => toggleTechnique(tech)}
+                      className="accent-[#c2652a] rounded-sm"
+                    />
+                    <span>{tech}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -510,7 +445,8 @@ export const CollectionPage = () => {
                 <label className="flex items-start gap-2 text-xs text-[#524337] cursor-pointer">
                   <input
                     type="checkbox"
-                    defaultChecked
+                    checked={isCertifiedOnly}
+                    onChange={(e) => setIsCertifiedOnly(e.target.checked)}
                     className="accent-[#c2652a] rounded-sm mt-0.5"
                   />
                   <div>
@@ -556,47 +492,148 @@ export const CollectionPage = () => {
             {/* Header Lưới: Active Tags Filter & Đếm số lượng */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#ebe1d5]">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-[#8a7260]">Lọc theo:</span>
-                <span className="inline-flex items-center gap-1 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]">
-                  Men Tro Củi Tự Nhiên
-                  <button
-                    type="button"
-                    onClick={handleResetFilters}
-                    className="hover:text-black font-bold"
-                  >
-                    ×
-                  </button>
-                </span>
-                <span className="inline-flex items-center gap-1 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]">
-                  Khử oxy 1300°C
-                  <button
-                    type="button"
-                    onClick={handleResetFilters}
-                    className="hover:text-black font-bold"
-                  >
-                    ×
-                  </button>
-                </span>
+                <span className="text-xs text-[#8a7260] font-medium">Lọc theo:</span>
+                {!(
+                  searchKeywords.trim() !== '' ||
+                  selectedForm !== 'all' ||
+                  selectedGlazes.length > 0 ||
+                  selectedTechniques.length > 0 ||
+                  artisanFilter !== 'all' ||
+                  priceRange < 2600000
+                ) && (
+                  <span className="text-xs text-[#a08975] italic">Tất cả tác phẩm</span>
+                )}
+
+                {/* Tag từ khóa tìm kiếm */}
+                {searchKeywords.trim() !== '' && (
+                  <span className="inline-flex items-center gap-1.5 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]">
+                    <span>Từ khóa: "{searchKeywords}"</span>
+                    <button
+                      type="button"
+                      onClick={() => setSearchKeywords('')}
+                      className="hover:text-black font-bold cursor-pointer text-sm leading-none"
+                      title="Xóa tìm kiếm"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+
+                {/* Tag dáng gốm */}
                 {selectedForm !== 'all' && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]">
-                    {selectedForm}
+                  <span className="inline-flex items-center gap-1.5 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]">
+                    <span>Dáng: {selectedForm}</span>
                     <button
                       type="button"
                       onClick={() => setSelectedForm('all')}
-                      className="hover:text-black font-bold"
+                      className="hover:text-black font-bold cursor-pointer text-sm leading-none"
+                      title="Bỏ chọn dáng"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+
+                {/* Tag các dòng men đã chọn */}
+                {selectedGlazes.map((glaze) => (
+                  <span
+                    key={glaze}
+                    className="inline-flex items-center gap-1.5 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]"
+                  >
+                    <span>{glaze}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleGlaze(glaze)}
+                      className="hover:text-black font-bold cursor-pointer text-sm leading-none"
+                      title={`Bỏ lọc ${glaze}`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+
+                {/* Tag các kỹ thuật lò đã chọn */}
+                {selectedTechniques.map((tech) => (
+                  <span
+                    key={tech}
+                    className="inline-flex items-center gap-1.5 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]"
+                  >
+                    <span>{tech}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleTechnique(tech)}
+                      className="hover:text-black font-bold cursor-pointer text-sm leading-none"
+                      title={`Bỏ lọc ${tech}`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+
+                {/* Tag nghệ nhân */}
+                {artisanFilter !== 'all' && (
+                  <span className="inline-flex items-center gap-1.5 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]">
+                    <span>
+                      Nghệ nhân: {
+                        artisanFilter === 'nnut'
+                          ? 'NNƯT. Trần Hữu Trọng'
+                          : artisanFilter === 'tuan'
+                          ? 'Nguyễn Viết Tuấn'
+                          : artisanFilter === 'chudau'
+                          ? 'Xưởng Chu Đậu'
+                          : artisanFilter
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setArtisanFilter('all')}
+                      className="hover:text-black font-bold cursor-pointer text-sm leading-none"
+                      title="Bỏ chọn nghệ nhân"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+
+                {/* Tag khoảng giá */}
+                {priceRange < 2600000 && (
+                  <span className="inline-flex items-center gap-1.5 text-xs bg-[#f6eee4] text-[#c2652a] px-2.5 py-1 rounded-full border border-[#eddccc]">
+                    <span>Giá ≤ {priceRange.toLocaleString('vi-VN')}₫</span>
+                    <button
+                      type="button"
+                      onClick={() => setPriceRange(2600000)}
+                      className="hover:text-black font-bold cursor-pointer text-sm leading-none"
+                      title="Bỏ lọc giá"
                     >
                       ×
                     </button>
                   </span>
                 )}
               </div>
-              <span className="text-xs text-[#8a7260]">
-                Hiển thị {filteredProducts.length} trên 48 tác phẩm
-              </span>
+
+              {(searchKeywords.trim() !== '' ||
+                selectedForm !== 'all' ||
+                selectedGlazes.length > 0 ||
+                selectedTechniques.length > 0 ||
+                artisanFilter !== 'all' ||
+                priceRange < 2600000) && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-xs text-[#a69280] hover:text-[#c2652a] transition-colors underline cursor-pointer"
+                >
+                  Xóa tất cả
+                </button>
+              )}
             </div>
 
             {/* LƯỚI SẢN PHẨM (3 Cột) */}
-            {filteredProducts.length === 0 ? (
+            {isLoading ? (
+              <div className="bg-white rounded-2xl border border-[#ebdcd0] p-16 text-center space-y-4">
+                <div className="w-10 h-10 border-3 border-[#c2652a]/20 border-t-[#c2652a] rounded-full animate-spin mx-auto"></div>
+                <p className="font-serif text-base text-[#26201b]">Đang tải danh sách tác phẩm gốm mộc...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="bg-white rounded-2xl border border-[#ebdcd0] p-12 text-center space-y-3">
                 <p className="font-serif text-lg text-[#26201b]">
                   Không tìm thấy tác phẩm phù hợp với bộ lọc
@@ -614,8 +651,7 @@ export const CollectionPage = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredProducts.map((item) => {
-                  const isFavorited = !!favorites[item.id];
+                {paginatedProducts.map((item) => {
                   const detailUrl = `${ROUTES.PRODUCTS}/${item.id}`;
 
                   return (
@@ -638,33 +674,6 @@ export const CollectionPage = () => {
                         <div className="absolute top-3 left-3 bg-[#e8ded2]/90 backdrop-blur-xs text-[#5c493a] text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wider border border-[#dfd2c4]">
                           {item.tag}
                         </div>
-
-                        {/* Nút Yêu Thích góc trên phải */}
-                        <button
-                          type="button"
-                          onClick={() => handleToggleFavorite(item)}
-                          className={`absolute top-3 right-3 w-8 h-8 rounded-full backdrop-blur-xs flex items-center justify-center transition-colors shadow-xs ${
-                            isFavorited
-                              ? 'bg-red-50 text-red-600'
-                              : 'bg-white/80 hover:bg-white text-[#5c493a] hover:text-[#c2652a]'
-                          }`}
-                          title="Lưu tác phẩm"
-                          aria-label="Lưu tác phẩm"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill={isFavorited ? 'currentColor' : 'none'}
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.8"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                            />
-                          </svg>
-                        </button>
                       </div>
 
                       {/* Nội Dung Thẻ */}
@@ -759,12 +768,17 @@ export const CollectionPage = () => {
               </div>
             )}
 
-            {/* THANH PHÂN TRANG (PAGINATION SHARED COMPONENT) */}
-            <Pagination
-              currentPage={currentPage}
-              totalPages={6}
-              onPageChange={(page) => setCurrentPage(page)}
-            />
+            {/* THANH PHÂN TRANG (Chỉ hiển thị khi tổng sản phẩm vượt quá 9) */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                  window.scrollTo({ top: 350, behavior: 'smooth' });
+                }}
+              />
+            )}
           </section>
         </div>
       </main>

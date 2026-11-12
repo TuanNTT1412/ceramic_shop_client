@@ -10,6 +10,12 @@ export const reviewApi = {
     client.get(`/products/${productId}/reviews`, { params }),
 
   /**
+   * Lấy danh sách tất cả đánh giá dành cho Admin/Staff
+   * @param {{ page?, limit?, rating? }} params
+   */
+  getAllReviews: (params) => client.get('/reviews', { params }),
+
+  /**
    * Khách hàng gửi đánh giá sau khi nhận hàng
    * @param {{ orderDetailId: string, rating: number, comment?: string, images?: string[] }} data
    */

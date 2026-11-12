@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth, useToast } from '../../context';
 import { ROUTES } from '../../constants';
 
@@ -9,6 +9,7 @@ export const MemberDropdown = () => {
 
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const toast = useToast();
+  const navigate = useNavigate();
 
   // Đóng dropdown khi click ra ngoài vùng hiển thị
   useEffect(() => {
@@ -21,10 +22,11 @@ export const MemberDropdown = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsOpen(false);
-    logout();
+    await logout();
     toast.success('Đã đăng xuất tài khoản thành công.');
+    navigate(ROUTES.LOGIN);
   };
 
   return (
@@ -127,8 +129,8 @@ export const MemberDropdown = () => {
                 </svg>
               </div>
               <div className="flex-1">
-                <div className="font-semibold leading-tight">Hồ Sơ & Bộ Sưu Tập</div>
-                <div className="text-[10px] text-[#8a705b] mt-0.5">Tác phẩm yêu thích & sổ địa chỉ</div>
+                <div className="font-semibold leading-tight">Quản Lý Hồ Sơ Cá Nhân</div>
+                <div className="text-[10px] text-[#8a705b] mt-0.5">Thông tin tài khoản & sổ địa chỉ</div>
               </div>
               <svg
                 className="w-3.5 h-3.5 text-[#b09b8b] group-hover:text-[#c2652a] group-hover:translate-x-0.5 transition-all"
@@ -140,37 +142,7 @@ export const MemberDropdown = () => {
               </svg>
             </Link>
 
-            {/* Mục 2: Lịch sử đơn hàng & Chứng thư */}
-            <Link
-              to={ROUTES.MY_ORDERS}
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-[#f0e5d8] group-hover:bg-[#faefe4] flex items-center justify-center text-[#735e4d] group-hover:text-[#c2652a] transition-colors shrink-0">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <div className="font-semibold leading-tight">Đơn Hàng Của Tôi</div>
-                <div className="text-[10px] text-[#8a705b] mt-0.5">Tiến độ xuất lò & mã ấn triện</div>
-              </div>
-              <svg
-                className="w-3.5 h-3.5 text-[#b09b8b] group-hover:text-[#c2652a] group-hover:translate-x-0.5 transition-all"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-
-            {/* Mục 3: Cổng Quản Trị Xưởng Gốm (Admin Portal) */}
+            {/* Mục 2: Cổng Quản Trị Xưởng Gốm (Chỉ hiển thị khi tài khoản có quyền ADMIN) */}
             {isAdmin && (
               <div className="pt-1 border-t border-[#ebdcd0]">
                 <Link
@@ -199,7 +171,7 @@ export const MemberDropdown = () => {
                       Cổng Quản Trị Xưởng
                     </div>
                     <div className="text-[10px] text-[#8a705b]">
-                      Dành cho Quản trị viên
+                      Quản lý đơn, kho & sản phẩm
                     </div>
                   </div>
                   <span className="text-[9px] bg-[#c2652a]/10 text-[#c2652a] px-1.5 py-0.5 rounded font-mono font-semibold">

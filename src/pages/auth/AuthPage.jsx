@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, useToast } from '../../context';
 import { ROUTES } from '../../constants';
 import { getErrorMessage } from '../../utils/format';
 
 const ROLE_DATA = {
   CUSTOMER: {
-    email: 'khachhang@sahara.vn',
-    name: 'Khách hàng thân thiết',
+    email: 'customer@ceramic.com',
+    password: '123456',
+    name: 'Nguyễn Văn Khách',
     desc: 'Mặc định: Khách hàng mua sắm & thưởng lãm',
   },
   STAFF: {
     email: 'staff@ceramic.com',
-    name: 'Nghệ nhân gốm mộc',
+    password: '123456',
+    name: 'Nhân viên Bán hàng',
     desc: 'STAFF: Quản lý xưởng & giám tuyển sản phẩm',
   },
   ADMIN: {
-    email: 'quantri@sahara.vn',
-    name: 'Tổng quản trị viên',
+    email: 'admin@ceramic.com',
+    password: '123456',
+    name: 'Quản trị viên Hệ thống',
     desc: 'ADMIN: Quản trị hạ tầng phân quyền & phân tích',
   },
 };
@@ -28,7 +31,7 @@ export const AuthPage = ({ initialTab = 'login' }) => {
 
   // Form states
   const [loginEmail, setLoginEmail] = useState(ROLE_DATA.CUSTOMER.email);
-  const [loginPassword, setLoginPassword] = useState('MatKhauGomMoc2024!');
+  const [loginPassword, setLoginPassword] = useState(ROLE_DATA.CUSTOMER.password);
   const [rememberMe, setRememberMe] = useState(true);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
@@ -43,16 +46,22 @@ export const AuthPage = ({ initialTab = 'login' }) => {
   const { login, register } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const rawRedirect = searchParams.get('redirect');
+  const redirectTarget = rawRedirect ? decodeURIComponent(rawRedirect) : location.state?.from?.pathname;
 
   // Chọn vai trò mô phỏng (Role Simulator)
   const handleSelectRole = (role) => {
     setCurrentRole(role);
     setLoginEmail(ROLE_DATA[role].email);
+    setLoginPassword(ROLE_DATA[role].password);
     setStatusBanner({
       type: 'info',
       icon: 'sync_alt',
       title: `Đã chọn vai trò: ${role}`,
-      desc: `Mẫu phiên chuyển sang tài khoản [${ROLE_DATA[role].email}].`,
+      desc: `Đã điền tài khoản [${ROLE_DATA[role].email}]. Mật khẩu: 123456`,
     });
   };
 
@@ -83,10 +92,12 @@ export const AuthPage = ({ initialTab = 'login' }) => {
       setTimeout(() => {
         if (userData?.role === 'ADMIN') {
           navigate(ROUTES.ADMIN.DASHBOARD);
+        } else if (redirectTarget) {
+          navigate(redirectTarget);
         } else {
           navigate(ROUTES.HOME);
         }
-      }, 1000);
+      }, 800);
     } catch (err) {
       // Nếu BE chưa chạy hoặc sai tài khoản, cung cấp chế độ demo mượt mà
       console.warn('Đăng nhập server lỗi hoặc offline, kích hoạt chế độ demo:', err);
@@ -101,7 +112,15 @@ export const AuthPage = ({ initialTab = 'login' }) => {
           desc: `Đã tạo phiên đăng nhập giả lập cho ${loginEmail} [${currentRole}].`,
         });
         toast.success(`Đăng nhập thành công với vai trò ${currentRole}!`);
-        setTimeout(() => navigate(ROUTES.HOME), 1200);
+        setTimeout(() => {
+          if (currentRole === 'ADMIN') {
+            navigate(ROUTES.ADMIN.DASHBOARD);
+          } else if (redirectTarget) {
+            navigate(redirectTarget);
+          } else {
+            navigate(ROUTES.HOME);
+          }
+        }, 1000);
       } else {
         const message = getErrorMessage(err, 'Đăng nhập không thành công. Vui lòng kiểm tra lại.');
         setStatusBanner({

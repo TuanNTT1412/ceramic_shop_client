@@ -31,7 +31,7 @@ export const Footer = () => {
               </span>
             </div>
 
-            <p className="font-serif italic text-xs leading-relaxed text-[#c2652a]">
+            <p className="font-serif italic text-xs leading-relaxed text-[#4a3f35]">
               “Hồn cốt của đất sa thạch nung qua lửa mộc, nơi sự không hoàn hảo tạo nên kiệt tác vĩnh cửu.”
             </p>
 

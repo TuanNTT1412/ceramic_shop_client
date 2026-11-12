@@ -1,144 +1,153 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useToast } from '../../context';
+import { useCart, useAuth, useToast } from '../../context';
+import { Modal } from '../../components/ui';
 import { formatCurrency } from '../../utils/format';
 import { ROUTES } from '../../constants';
 
-// 1. Dữ liệu mock sản phẩm sẵn sàng xuất xưởng
-const INITIAL_AVAILABLE_ITEMS = [
-  {
-    id: 'cart-1',
-    productId: 'ML-2401',
-    name: 'Bộ Ấm Chén Trà Đạo Men Tro Củi',
-    badge: 'Gốm Nung Củi',
-    spec: 'Quy cách: Men tro củi • Bộ 6 chén kèm khay',
-    price: 1450000,
-    quantity: 1,
-    image: '/images/product-1.jpg',
-    selected: true,
-  },
-  {
-    id: 'cart-2',
-    productId: 'ML-2409',
-    name: 'Bình Hoa Gốm Men Chàm Khói Dáng Tỳ Bà',
-    badge: 'Tác phẩm độc bản',
-    spec: 'Dáng vuốt tay thủ công • Cao 32cm',
-    price: 1850000,
-    quantity: 1,
-    image: '/images/hero-vase.jpg',
-    selected: true,
-  },
-  {
-    id: 'cart-3',
-    productId: 'ML-2420',
-    name: 'Hũ Đựng Trà Men Chàm Nắp Gỗ Khí Mật',
-    badge: 'Phụ Kiện Trà Đạo',
-    spec: 'Nắp gỗ gõ đỏ nguyên khối • Sức chứa 180g',
-    price: 760000,
-    quantity: 1,
-    image: '/images/product-4.jpg',
-    selected: true,
-  },
-];
-
-// 2. Dữ liệu mock sản phẩm tạm thời không khả dụng (tồn kho / mẻ lò)
-const INITIAL_UNAVAILABLE_ITEMS = [
-  {
-    id: 'cart-unavail-1',
-    productId: 'ML-2414',
-    name: 'Khay Trà Sa Mộc Chữ Nhật Dáng Trầm',
-    type: 'OUT_OF_STOCK',
-    typeBadge: 'OUT_OF_STOCK • Hết hàng trong kho',
-    desc: 'Gốm đất sa mộc nung mộc • Nghệ nhân đang trong chu kỳ nung mẻ mới',
-    note: 'Dự kiến nung xong sau 12 ngày',
-    image: '/images/cat-bat-dia.jpg',
-  },
-  {
-    id: 'cart-unavail-2',
-    productId: 'ML-2405',
-    name: 'Lư Xông Trầm Men Hạt Sa Mộc',
-    type: 'EXCEEDS_STOCK',
-    typeBadge: 'EXCEEDS_STOCK • Vượt quá tồn kho thực tế',
-    desc: 'Bạn yêu cầu: 3 chiếc — Xưởng hiện chỉ còn giữ: 1 chiếc',
-    maxStock: 1,
-    price: 620000,
-    image: '/images/cat-tra-dao.jpg',
-  },
-];
-
 export const CartPage = () => {
+  const {
+    items,
+    totalItems,
+    totalPrice,
+    isLoading,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    clearUnavailable,
+  } = useCart();
+  const { isAuthenticated } = useAuth();
   const toast = useToast();
 
-  const [availableItems, setAvailableItems] = useState(INITIAL_AVAILABLE_ITEMS);
-  const [unavailableItems, setUnavailableItems] = useState(INITIAL_UNAVAILABLE_ITEMS);
-  const MEMBER_DISCOUNT = 200000;
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+
+  // Tự động đồng bộ danh sách món được chọn khi giỏ hàng cập nhật
+  useEffect(() => {
+    if (items && items.length > 0) {
+      const availIds = items.filter((i) => i.isAvailable).map((i) => i.id);
+      setSelectedIds((prev) => {
+        if (prev.length === 0) return availIds;
+        const preserved = availIds.filter((id) => prev.includes(id));
+        return preserved.length > 0 ? preserved : availIds;
+      });
+    } else {
+      setSelectedIds([]);
+    }
+  }, [items]);
+
+  // Nhóm 1: Sản phẩm sẵn sàng xuất xưởng (Khả dụng)
+  const availableItems = useMemo(() => {
+    return (items || [])
+      .filter((item) => item.isAvailable)
+      .map((item) => ({
+        id: item.id,
+        variantId: item.variantId,
+        productId: item.productId,
+        name: item.productName || 'Tác phẩm Gốm Mộc',
+        badge: 'Gốm Nung Củi',
+        spec: item.variantName || 'Quy cách chuẩn nghệ nhân',
+        price: item.price || 0,
+        quantity: item.quantity,
+        stockQuantity: item.stockQuantity,
+        image: item.primaryImage || '/images/product-1.jpg',
+        selected: selectedIds.includes(item.id),
+      }));
+  }, [items, selectedIds]);
+
+  // Nhóm 2: Sản phẩm tạm thời không khả dụng (tồn kho / mẻ lò)
+  const unavailableItems = useMemo(() => {
+    return (items || [])
+      .filter((item) => !item.isAvailable)
+      .map((item) => {
+        let typeBadge = 'Không khả dụng';
+        let desc = 'Sản phẩm tạm thời không thể xuất xưởng';
+        if (item.unavailableReason === 'OUT_OF_STOCK') {
+          typeBadge = 'OUT_OF_STOCK • Hết hàng trong kho';
+          desc = 'Nghệ nhân đang trong chu kỳ nung mẻ mới';
+        } else if (item.unavailableReason === 'EXCEEDS_STOCK') {
+          typeBadge = `EXCEEDS_STOCK • Vượt quá tồn kho (Còn ${item.stockQuantity})`;
+          desc = `Bạn yêu cầu: ${item.quantity} chiếc — Xưởng hiện chỉ còn giữ: ${item.stockQuantity} chiếc`;
+        } else if (item.unavailableReason === 'INACTIVE') {
+          typeBadge = 'INACTIVE • Tạm ngừng kinh doanh';
+          desc = 'Tác phẩm đã dừng lưu hành';
+        }
+        return {
+          id: item.id,
+          variantId: item.variantId,
+          productId: item.productId,
+          name: item.productName || 'Tác phẩm Gốm Mộc',
+          type: item.unavailableReason,
+          typeBadge,
+          desc,
+          note: 'Dự kiến nung xong sau 12 ngày',
+          maxStock: item.stockQuantity || 0,
+          price: item.price || 0,
+          image: item.primaryImage || '/images/cat-tra-dao.jpg',
+        };
+      });
+  }, [items]);
+
+  const MEMBER_DISCOUNT = availableItems.length > 0 ? 200000 : 0;
 
   // Xử lý tăng / giảm số lượng
-  const handleUpdateQuantity = (id, delta) => {
-    setAvailableItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newQty = item.quantity + delta;
-          if (newQty < 1) return item;
-          return { ...item, quantity: newQty };
-        }
-        return item;
-      })
-    );
+  const handleUpdateQuantity = async (id, delta) => {
+    const item = (items || []).find((i) => i.id === id);
+    if (!item) return;
+    const newQty = item.quantity + delta;
+    if (newQty <= 0) {
+      await removeItem(id);
+    } else {
+      await updateQuantity(id, newQty);
+    }
   };
 
   // Chọn / bỏ chọn từng món
   const handleToggleSelect = (id) => {
-    setAvailableItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, selected: !item.selected } : item))
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
     );
   };
 
   // Xóa từng món khả dụng
-  const handleRemoveAvailableItem = (id, name) => {
-    setAvailableItems((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveAvailableItem = async (id, name) => {
+    await removeItem(id);
     toast.info(`Đã bỏ "${name}" khỏi giỏ hàng.`);
   };
 
   // Xóa từng món không khả dụng
-  const handleRemoveUnavailableItem = (id, name) => {
-    setUnavailableItems((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveUnavailableItem = async (id, name) => {
+    await removeItem(id);
     toast.info(`Đã gỡ "${name}".`);
   };
 
   // Xóa tất cả món không khả dụng
-  const handleClearUnavailable = () => {
-    setUnavailableItems([]);
+  const handleClearUnavailable = async () => {
+    await clearUnavailable();
     toast.success('Đã xóa tất cả các món không khả dụng.');
   };
 
-  // Nút "Về tối đa: 1" chuyển món vượt quá tồn kho sang nhóm khả dụng
-  const handleFixExceedsStock = (unavailItem) => {
-    setUnavailableItems((prev) => prev.filter((item) => item.id !== unavailItem.id));
-    setAvailableItems((prev) => [
-      ...prev,
-      {
-        id: `cart-fixed-${Date.now()}`,
-        productId: unavailItem.productId,
-        name: unavailItem.name,
-        badge: 'Mẻ Lò Cuối',
-        spec: 'Số lượng tối đa còn lại tại xưởng: 1 chiếc',
-        price: unavailItem.price || 620000,
-        quantity: 1,
-        image: unavailItem.image,
-        selected: true,
-      },
-    ]);
-    toast.success(`Đã điều chỉnh "${unavailItem.name}" về 1 chiếc khả dụng.`);
+  // Nút "Về tối đa" chuyển món vượt quá tồn kho sang nhóm khả dụng
+  const handleFixExceedsStock = async (unavailItem) => {
+    if (unavailItem.maxStock > 0) {
+      await updateQuantity(unavailItem.id, unavailItem.maxStock);
+      toast.success(`Đã điều chỉnh "${unavailItem.name}" về ${unavailItem.maxStock} chiếc khả dụng.`);
+    } else {
+      await removeItem(unavailItem.id);
+      toast.info(`Đã gỡ "${unavailItem.name}" do hết hàng.`);
+    }
   };
 
-  // Xóa sạch giỏ hàng
-  const handleClearCart = () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa toàn bộ sản phẩm trong giỏ hàng?')) {
-      setAvailableItems([]);
-      setUnavailableItems([]);
-      toast.success('Đã làm trống giỏ hàng.');
-    }
+  // Mở hộp thoại nổi (Modal) xác nhận xóa sạch giỏ hàng
+  const handleOpenClearModal = () => {
+    setIsClearModalOpen(true);
+  };
+
+  // Xác nhận làm rỗng giỏ hàng từ Modal
+  const handleConfirmClearCart = async () => {
+    setIsClearModalOpen(false);
+    await clearCart();
+    toast.success('Đã làm trống toàn bộ giỏ hàng.');
   };
 
   // Tính toán tổng tiền
@@ -152,7 +161,7 @@ export const CartPage = () => {
 
   const total = useMemo(() => {
     if (subtotal === 0) return 0;
-    return Math.max(0, subtotal - MEMBER_DISCOUNT);
+    return Math.max(0, subtotal - (subtotal >= MEMBER_DISCOUNT ? MEMBER_DISCOUNT : 0));
   }, [subtotal, MEMBER_DISCOUNT]);
 
   return (
@@ -191,7 +200,7 @@ export const CartPage = () => {
 
           {(availableItems.length > 0 || unavailableItems.length > 0) && (
             <button
-              onClick={handleClearCart}
+              onClick={handleOpenClearModal}
               type="button"
               className="group self-start md:self-auto inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-on-surface-variant hover:text-error bg-surface-container hover:bg-error-container/40 rounded-lg transition-all"
             >
@@ -202,6 +211,25 @@ export const CartPage = () => {
             </button>
           )}
         </div>
+
+        {/* Thông báo đăng nhập nếu là khách vãng lai */}
+        {!isAuthenticated && (
+          <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-primary/10 border border-primary/20 text-on-surface">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary text-2xl">account_circle</span>
+              <p className="text-xs sm:text-sm">
+                Quý khách chưa đăng nhập. Vui lòng đăng nhập để lưu trữ và đồng bộ các tác phẩm trong giỏ hàng.
+              </p>
+            </div>
+            <Link
+              to={`${ROUTES.LOGIN}?redirect=${encodeURIComponent(ROUTES.CART)}`}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-all shadow-sm shrink-0"
+            >
+              <span>Đăng nhập ngay</span>
+              <span className="material-symbols-outlined text-xs">login</span>
+            </Link>
+          </div>
+        )}
 
         {/* ========================================================= */}
         {/* 2. MAIN GRID LAYOUT (12 CỘT)                              */}
@@ -575,6 +603,49 @@ export const CartPage = () => {
           </aside>
         </div>
       </div>
+
+      {/* ========================================================= */}
+      {/* 3. MODAL XÁC NHẬN LÀM RỖNG GIỎ HÀNG (HỘP THOẠI NỔI TÙY CHỈNH) */}
+      {/* ========================================================= */}
+      <Modal
+        isOpen={isClearModalOpen}
+        onClose={() => setIsClearModalOpen(false)}
+        title="Làm Rỗng Giỏ Hàng"
+        subtitle="Xác nhận gỡ bỏ toàn bộ tác phẩm khỏi phiên mua sắm"
+        maxWidth="sm"
+      >
+        <div className="flex flex-col gap-5">
+          <div className="flex items-start gap-3.5 p-4 rounded-xl bg-[#faefe4] border border-[#e8d5c4] text-[#26201b]">
+            <div className="w-10 h-10 rounded-full bg-[#fce8db] text-[#c2652a] flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-2xl">delete_sweep</span>
+            </div>
+            <div className="text-xs sm:text-sm space-y-1">
+              <p className="font-semibold text-[#c2652a]">Thao tác không thể hoàn tác</p>
+              <p className="text-[#735e4d] leading-relaxed">
+                Quý khách có chắc chắn muốn xóa toàn bộ tác phẩm trong giỏ hàng không? Tất cả sản phẩm sẽ bị loại bỏ khỏi danh sách đặt mua.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsClearModalOpen(false)}
+              className="px-4 py-2 rounded-lg bg-[#f0e7dc] hover:bg-[#e4d6c5] text-[#524337] text-xs font-semibold transition-colors"
+            >
+              Hủy bỏ
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmClearCart}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#c2652a] hover:bg-[#aa541e] text-white text-xs font-semibold shadow-sm transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">check</span>
+              <span>Xác nhận xóa</span>
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

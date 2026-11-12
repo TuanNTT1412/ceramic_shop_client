@@ -82,21 +82,6 @@ export const ProductCard = ({
             </Badge>
           </div>
         )}
-
-        {/* Nút yêu thích (Wishlist Heart) */}
-        <button
-          onClick={handleFavoriteClick}
-          className={`absolute top-3 right-3 w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all duration-200 shadow-xs active:scale-90 ${
-            isFavorite
-              ? 'bg-red-50 text-red-600'
-              : 'bg-surface/80 text-on-surface hover:text-primary hover:bg-white'
-          }`}
-          aria-label="Yêu thích"
-        >
-          <span className="material-symbols-outlined text-[16px]">
-            {isFavorite ? 'favorite' : 'favorite_border'}
-          </span>
-        </button>
       </div>
 
       {/* Thông Tin Tác Phẩm */}

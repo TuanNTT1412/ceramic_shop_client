@@ -36,7 +36,7 @@ export const ORDER_STATUS_MAP = {
     dotColor: 'bg-indigo-500',
   },
   [ORDER_STATUS.READY_FOR_PICKUP]: {
-    label: 'Chờ nhận tại xưởng',
+    label: 'Chờ nhận tại cửa hàng',
     color: 'bg-purple-50 text-purple-800 border-purple-200',
     dotColor: 'bg-purple-500',
   },
@@ -90,7 +90,7 @@ export const DELIVERY_TYPE = {
 };
 
 export const DELIVERY_TYPE_LABEL = {
-  [DELIVERY_TYPE.PICKUP]: 'Nhận trực tiếp tại xưởng gốm',
+  [DELIVERY_TYPE.PICKUP]: 'Nhận trực tiếp tại cửa hàng',
   [DELIVERY_TYPE.SHIPPING]: 'Giao hàng tận nơi',
 };
 
@@ -135,5 +135,6 @@ export const ROUTES = {
     CATEGORIES: '/admin/categories',
     ORDERS: '/admin/orders',
     USERS: '/admin/users',
+    REVIEWS: '/admin/reviews',
   },
 };

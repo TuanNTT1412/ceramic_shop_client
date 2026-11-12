@@ -82,12 +82,12 @@ export default {
         },
       },
       fontFamily: {
-        headline: ['"EB Garamond"', 'serif'],
-        display: ['"EB Garamond"', 'serif'],
-        body: ['Manrope', 'sans-serif'],
-        label: ['Manrope', 'sans-serif'],
-        sans: ['Manrope', 'sans-serif'],
-        serif: ['"Playfair Display"', 'serif'],
+        headline: ['"Lora"', 'serif'],
+        display: ['"Lora"', 'serif'],
+        serif: ['"Lora"', 'serif'],
+        body: ['"Be Vietnam Pro"', 'sans-serif'],
+        label: ['"Be Vietnam Pro"', 'sans-serif'],
+        sans: ['"Be Vietnam Pro"', 'sans-serif'],
       },
       borderRadius: {
         'sm': '8px',

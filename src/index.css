@@ -1,5 +1,5 @@
-/* 1. Nhúng 3 bộ font chuẩn của phong cách Sahara */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap');
+/* 1. Nhúng bộ font Lora (Tiêu đề / Calligraphic Serif) và Be Vietnam Pro (Thân bài / Humanist Sans) */
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
 
 /* 2. Ba chỉ thị bắt buộc của Tailwind */
 @tailwind base;
@@ -8,17 +8,22 @@
 
 /* 3. Base styles mặc định cho toàn web */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
     background-color: #faf7f2;
     color: #4a3f35;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Be Vietnam Pro', sans-serif;
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
   }
   
   h1, h2, h3, h4 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Lora', serif;
     color: #2b221b;
+    letter-spacing: 0.01em;
   }
 }
 

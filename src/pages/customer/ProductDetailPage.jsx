@@ -1,244 +1,32 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useCart, useToast } from '../../context';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useCart, useToast, useAuth } from '../../context';
 import { ProductCard } from '../../components/shared';
 import { formatCurrency } from '../../utils/format';
 import { ROUTES } from '../../constants';
+import { productApi } from '../../api';
 
-// ==========================================
-// DỮ LIỆU TÁC PHẨM CHI TIẾT (CHUẨN BẢN VẼ MẪU STITCH)
-// ==========================================
-const DEFAULT_PRODUCT = {
-  id: 'GM-HB-1300',
-  code: 'GM-HB-1300',
-  collection: 'Bộ Sưu Tập Sa Mạc Nung',
-  title: 'Bình Hoa Gốm Hỏa Biến Sa Thạch Dáng Tỳ Bà',
-  badgePrimary: 'Độc Bản Hỏa Biến',
-  badgeSecondary: 'Khử Oxy 1300°C',
-  statusBadge: 'Mẻ Lò Khai Hỏa 04 • Còn 3 tác phẩm tại xưởng',
-  rating: 4.9,
-  reviewsCount: 28,
-  soldCount: 14,
-  basePrice: 1850000,
-  originalPrice: 2200000,
-  discountText: 'Tiết kiệm 16%',
-  woodBaseGift: 'Kèm đế đôn gỗ hương mộc tự nhiên trị giá 320.000₫',
-  yearOrigin: 'Gốm Mộc • Sa Thạch 2024',
-  images: [
-    {
-      src: '/images/hero-vase.jpg',
-      alt: 'Bình Hoa Gốm Hỏa Biến Sa Thạch Dáng Tỳ Bà - Góc nhìn chính diện men tro sa thạch',
-    },
-    {
-      src: '/images/cat-binh-hoa.jpg',
-      alt: 'Cận cảnh miệng vuốt tay thủ công và các vệt men tro tự nhiên đọng trên cốt gốm',
-    },
-    {
-      src: '/images/product-2.jpg',
-      alt: 'Chi tiết triện son đỏ nghệ nhân đóng dưới đáy mộc kèm số seri mẻ lò',
-    },
-    {
-      src: '/images/hero-cup.jpg',
-      alt: 'Tác phẩm bài trí tĩnh vật cùng nhánh sen khô bên bàn trà gỗ mộc',
-    },
-  ],
-  variants: [
-    {
-      id: 'var-ty-ba',
-      name: 'Dáng Tỳ Bà',
-      spec: 'Cao 35cm • Bụng 22cm',
-      price: 1850000,
-      stock: 3,
-    },
-    {
-      id: 'var-giot-nang',
-      name: 'Dáng Giọt Nắng',
-      spec: 'Cao 28cm • Bụng 18cm',
-      price: 1620000,
-      stock: 2,
-    },
-    {
-      id: 'var-that-eo',
-      name: 'Dáng Thắt Eo Cổ Điển',
-      spec: 'Cao 42cm • Bụng 25cm',
-      price: 2250000,
-      stock: 1,
-    },
-  ],
-  specs: [
-    { label: 'Quy cách tạo hình', value: 'Vuốt tay hoàn toàn trên bàn xoay thủ công truyền thống' },
-    { label: 'Cốt đất chế tác', value: 'Đất sét sa thạch trầm tích giàu khoáng sắt vùng duyên hải' },
-    { label: 'Chất liệu men phủ', value: 'Men tro củi nhãn tự nhiên nung hỏa biến, không chì hóa học' },
-    { label: 'Nhiệt độ nung lò', value: 'Lò con thoi nung củi liên tục 36 giờ, khử oxy đạt 1300°C' },
-    { label: 'Chứng nhận độc bản', value: 'Kèm chứng thư giám định số lò và dấu triện nghệ nhân khắc đáy' },
-    { label: 'Đặc tính bề mặt', value: 'Mộc sần sa thạch tự nhiên, chuyển sắc loang từ hổ phách đến tro xám' },
-    { label: 'Quy cách đóng gói', value: 'Hộp gấm lót nhung tơ tằm, 5 lớp đệm rơm chống va đập tuyệt đối' },
-    { label: 'Hướng dẫn bảo dưỡng', value: 'Rửa nhẹ bằng nước ấm tự nhiên, lau khăn mềm bông, không dùng xà phòng tẩy' },
-  ],
-  kilnCraftStory: {
-    heading: 'Vũ Điệu Lửa & Men Tro Trong Lò Nung Củi 1300°C',
-    paragraphs: [
-      'Khác biệt với các dòng gốm công nghiệp tráng men bóng nhân tạo, bình gốm hỏa biến Sa Thạch được nuôi dưỡng trong ngọn lửa rực cháy suốt 36 giờ không ngừng nghỉ. Tàn tro từ củi gỗ nhãn già bay bổng trong buồng lò, tự do đáp xuống bề mặt đất sét nóng chảy ở ngưỡng 1300 độ C.',
-      'Sự kết hợp giữa silica trong tro thực vật và các hạt khoáng chất trong đất sa thạch tạo nên lớp men tự nhiên mang sắc thái ngẫu biến kỳ diệu. Không một mẻ lò nào lặp lại, và không bao giờ có hai tác phẩm mang cùng một đường vân ngọn lửa.',
-    ],
-  },
-  artisan: {
-    name: 'Nghệ nhân Nguyễn Thành Đạt',
-    role: 'Chủ trì xưởng lò nung Sa Thạch • 26 năm gắn bó di sản đất nung',
-    quote:
-      '“Mỗi khối đất nung qua lửa mộc mang linh hồn của cát và lửa. Chúng tôi không cưỡng cầu sự hoàn hảo tì vết công nghiệp, mà nâng niu chính những vết rạn và đốm tro tự nhiên do đất trời ban tặng.”',
-    image: '/images/craftsman.jpg',
-  },
-  reviews: [
-    {
-      id: 'rev-1',
-      author: 'Trần Minh Khang',
-      location: 'Hà Nội',
-      rating: 5,
-      date: '18/10/2024',
-      badge: 'Đã thỉnh tác phẩm độc bản',
-      content:
-        'Bình cầm trên tay rất đầm và chắc. Bề mặt men nhám tự nhiên nhưng vuốt ve rất êm ái, màu hỏa biến khi đặt dưới ánh đèn vàng phòng trà cực kỳ có chiều sâu và ấm áp. Rất trân trọng tâm huyết đóng gói 5 lớp của xưởng!',
-      images: ['/images/hero-vase.jpg', '/images/product-2.jpg'],
-    },
-    {
-      id: 'rev-2',
-      author: 'Lê Hoàng Yến',
-      location: 'Đà Nẵng',
-      rating: 5,
-      date: '02/10/2024',
-      badge: 'Đã thỉnh tác phẩm độc bản',
-      content:
-        'Đế đôn gỗ hương mộc đi kèm vừa vặn hoàn hảo, thơm nhẹ mùi gỗ tự nhiên. Chứng thư giám định có ghi rõ số mẻ lò nung và chữ ký mộc bản của nghệ nhân, rất thích hợp làm quà tặng tri kỷ.',
-      images: ['/images/hero-cup.jpg'],
-    },
-    {
-      id: 'rev-3',
-      author: 'Vũ Quốc Bảo',
-      location: 'TP. Hồ Chí Minh',
-      rating: 5,
-      date: '14/09/2024',
-      badge: 'Đã thỉnh tác phẩm độc bản',
-      content:
-        'Cắm cành sen khô hay cành lựu vào bình dáng tỳ bà này đều toát lên tinh thần wabi-sabi rất thanh tịnh. Giao hàng nhanh và đóng gói kỹ càng hơn mong đợi.',
-      images: ['/images/cat-binh-hoa.jpg', '/images/product-1.jpg'],
-    },
-  ],
-  relatedProducts: [
-    {
-      id: 'ML-2401',
-      name: 'Bộ Ấm Chén Trà Đạo Men Tro Củi',
-      spec: 'Bộ 6 chén kèm khay gỗ • Men tro tự nhiên',
-      price: 1450000,
-      image: '/images/product-1.jpg',
-      badge: 'Gốm Nung Củi',
-    },
-    {
-      id: 'ML-2403',
-      name: 'Đĩa Mộc Bàn Ăn Khắc Chỉ Men Sa Mộc',
-      spec: 'Đường kính 26cm • Men mộc thô mộc',
-      price: 480000,
-      image: '/images/cat-bat-dia.jpg',
-      badge: 'Đồ Bàn Ăn',
-    },
-    {
-      id: 'ML-2420',
-      name: 'Hũ Đựng Trà Men Chàm Nắp Gỗ Khí Mật',
-      spec: 'Nắp gõ đỏ nguyên khối • Sức chứa 180g',
-      price: 760000,
-      image: '/images/product-4.jpg',
-      badge: 'Phụ Kiện Trà',
-    },
-    {
-      id: 'ML-2409',
-      name: 'Bộ Tách Trà Hỏa Biến Mộc Bản',
-      spec: 'Tách trà vuốt tay • Men rạn tro sa mạc',
-      price: 680000,
-      image: '/images/cat-tra-dao.jpg',
-      badge: 'Trà Đạo',
-    },
-  ],
-};
-
-// Danh mục ánh xạ theo mã ID
-const CATALOG_BY_ID = {
-  '1': {
-    title: 'Ấm Trà Sa Thạch Vị Cố 220ml',
-    code: 'ML-2401',
-    collection: 'Ấm Chén Trà Đạo',
-    basePrice: 1250000,
-    originalPrice: 1500000,
-    images: [
-      { src: '/images/product-1.jpg', alt: 'Ấm Trà Sa Thạch Vị Cố 220ml - Góc chính diện' },
-      { src: '/images/cat-tra-dao.jpg', alt: 'Cận cảnh vòi rót và quai ấm vuốt tay' },
-      { src: '/images/hero-cup.jpg', alt: 'Ấm trà bên chén mộc sa thạch' },
-      { src: '/images/product-2.jpg', alt: 'Triện nung đáy ấm mộc bản' },
-    ],
-  },
-  '2': DEFAULT_PRODUCT,
-  '3': {
-    title: 'Tứ Chén Mộc Hỏa Biến Tro Tự Nhiên',
-    code: 'ML-2403',
-    collection: 'Ấm Chén Trà Đạo',
-    basePrice: 680000,
-    originalPrice: 850000,
-    images: [
-      { src: '/images/cat-tra-dao.jpg', alt: 'Tứ Chén Mộc Hỏa Biến Tro Tự Nhiên' },
-      { src: '/images/product-1.jpg', alt: 'Bộ chén trà bên ấm mộc' },
-      { src: '/images/hero-cup.jpg', alt: 'Chén trà men tro tự nhiên' },
-      { src: '/images/cat-binh-hoa.jpg', alt: 'Chi tiết lòng chén mộc' },
-    ],
-  },
-  '4': {
-    title: 'Đĩa Tiệc Sa Thạch Rạn Cốt Vàng Cát',
-    code: 'ML-2404',
-    collection: 'Bát Đĩa Bàn Tiệc Mộc',
-    basePrice: 420000,
-    originalPrice: 550000,
-    images: [
-      { src: '/images/cat-bat-dia.jpg', alt: 'Đĩa Tiệc Sa Thạch Rạn Cốt Vàng Cát' },
-      { src: '/images/product-3.jpg', alt: 'Cận cảnh men rạn sa mộc' },
-      { src: '/images/cat-binh-hoa.jpg', alt: 'Chi tiết gờ đĩa lượn sóng' },
-      { src: '/images/hero-vase.jpg', alt: 'Góc phối cảnh bàn tiệc' },
-    ],
-  },
-  'ML-2401': {
-    title: 'Bộ Ấm Chén Trà Đạo Men Tro Củi',
-    code: 'ML-2401',
-    collection: 'Ấm Chén Trà Đạo',
-    basePrice: 1450000,
-    originalPrice: 1750000,
-    images: [
-      { src: '/images/product-1.jpg', alt: 'Bộ Ấm Chén Trà Đạo Men Tro Củi' },
-      { src: '/images/cat-tra-dao.jpg', alt: 'Chén trà men tro' },
-      { src: '/images/hero-cup.jpg', alt: 'Ấm trà bên chén sa mộc' },
-      { src: '/images/product-2.jpg', alt: 'Dấu triện nung củi' },
-    ],
-  },
-};
 
 export const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
   const toast = useToast();
 
-  // Dữ liệu sản phẩm hiển thị theo ID hoặc mặc định
-  const product = useMemo(() => {
-    if (id && CATALOG_BY_ID[id]) {
-      return { ...DEFAULT_PRODUCT, ...CATALOG_BY_ID[id] };
-    }
-    return DEFAULT_PRODUCT;
-  }, [id]);
+  // Dữ liệu sản phẩm hiển thị theo ID từ Backend
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // States thao tác tương tác
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeZoomImage, setActiveZoomImage] = useState(null); // { src, alt }
 
   // Danh sách đánh giá & bình luận (hỗ trợ hiển thị và thêm mới kèm ảnh)
-  const [reviewsList, setReviewsList] = useState(product.reviews || []);
+  const [reviewsList, setReviewsList] = useState([]);
 
   // Modal viết đánh giá & bình luận kèm ảnh
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -254,13 +42,124 @@ export const ProductDetailPage = () => {
   const [engravingText, setEngravingText] = useState('');
   const engravingPrice = 150000;
 
+  // Tải chi tiết sản phẩm thật từ Backend khi có ID
+  useEffect(() => {
+    let isMounted = true;
+    const loadDetail = async () => {
+      if (!id) return;
+      setIsLoading(true);
+
+      try {
+        const res = await productApi.getProductDetail(id);
+        if (isMounted && res?.data) {
+          const p = res.data;
+          const variants = (p.variants || []).map((v) => ({
+            id: v.id,
+            name: v.variantName,
+            spec: `Còn ${v.stockQuantity} tác phẩm tại xưởng`,
+            price: v.price,
+            stock: v.stockQuantity,
+          }));
+
+          const allImages = (p.variants || []).flatMap((v) =>
+            (v.images || []).map((img) => ({
+              src:
+                img.imageUrl && !img.imageUrl.includes('example.com')
+                  ? img.imageUrl
+                  : '/images/hero-vase.jpg',
+              alt: `${p.name} - ${v.variantName}`,
+            }))
+          );
+
+          const defaultImg = allImages.length > 0 ? allImages : [{ src: '/images/hero-vase.jpg', alt: p.name }];
+          const defaultVariants =
+            variants.length > 0
+              ? variants
+              : [{ id: 'default', name: 'Tiêu Chuẩn', spec: 'Mặc định', price: 0 }];
+
+          // Tải các tác phẩm tương tự
+          let related = [];
+          try {
+            const relRes = await productApi.getProducts({ limit: 4 });
+            if (relRes?.data?.products) {
+              related = relRes.data.products
+                .filter((rp) => rp.id !== p.id)
+                .slice(0, 4)
+                .map((rp) => ({
+                  id: rp.id,
+                  name: rp.name,
+                  spec: rp.category?.name || 'Tác phẩm gốm mộc thủ công',
+                  price: rp.variants?.[0]?.price || 0,
+                  image:
+                    rp.variants?.[0]?.images?.[0]?.imageUrl &&
+                    !rp.variants?.[0]?.images?.[0]?.imageUrl.includes('example.com')
+                      ? rp.variants[0].images[0].imageUrl
+                      : '/images/hero-vase.jpg',
+                  link: `${ROUTES.PRODUCTS}/${rp.id}`,
+                }));
+            }
+          } catch (e) {
+            console.warn('Lỗi tải sản phẩm liên quan:', e?.message);
+          }
+
+          const formatted = {
+            id: p.id,
+            code: `GM-${p.id.slice(0, 6).toUpperCase()}`,
+            collection: p.category?.name || 'Gốm Mộc Độc Bản',
+            title: p.name,
+            desc:
+              p.description ||
+              'Cốt đất sét thô nung nhiệt độ cao 1300°C bằng củi tự nhiên tại xưởng Sahara Atelier.',
+            badgePrimary: p.category?.name || 'Tác Phẩm Tuyển Chọn',
+            badgeSecondary: 'Khử Oxy 1300°C',
+            rating: 5.0,
+            reviewsCount: 18,
+            soldCount: 9,
+            basePrice: defaultVariants[0]?.price || 0,
+            originalPrice: Math.round((defaultVariants[0]?.price || 0) * 1.15),
+            discountText: 'Ưu đãi mẻ lò',
+            woodBaseGift: 'Kèm bao bọc rơm 5 lớp xuất xưởng tiêu chuẩn',
+            yearOrigin: 'Gốm Mộc • Sa Thạch 2024',
+            images: defaultImg,
+            variants: defaultVariants,
+            details: [
+              { label: 'Dáng Tác Phẩm', value: p.category?.name || 'Gốm Mộc' },
+              { label: 'Chất Liệu Cốt', value: 'Đất sét thô nung củi nhiệt cao 1300°C' },
+              { label: 'Chế Tác', value: 'Vuốt tay thủ công truyền thống' },
+              { label: 'Nguồn Gốc', value: 'Xưởng Gốm Mộc Sahara Atelier' },
+            ],
+            reviews: [],
+            relatedProducts: related,
+          };
+
+          setProduct(formatted);
+          setSelectedVariant(formatted.variants[0]);
+        } else {
+          setProduct(null);
+        }
+      } catch (err) {
+        console.warn('Không tải được chi tiết sản phẩm từ server:', err?.message);
+        setProduct(null);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadDetail();
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
   // Cập nhật lại trạng thái khi đổi sản phẩm
   useEffect(() => {
-    setSelectedImageIndex(0);
-    setSelectedVariant(product.variants[0]);
-    setQuantity(1);
-    setReviewsList(product.reviews || []);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (product) {
+      setSelectedImageIndex(0);
+      setSelectedVariant(product.variants?.[0] || null);
+      setQuantity(1);
+      setReviewsList(product.reviews || []);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [id, product]);
 
   // Xử lý đính kèm nhiều ảnh từ máy người dùng
@@ -348,7 +247,7 @@ export const ProductDetailPage = () => {
     setQuantity((prev) => {
       const next = prev + delta;
       if (next < 1) return 1;
-      if (next > selectedVariant.stock) {
+      if (selectedVariant && next > selectedVariant.stock) {
         toast.warning(`Biến thể ${selectedVariant.name} hiện chỉ còn ${selectedVariant.stock} tác phẩm tại xưởng.`);
         return selectedVariant.stock;
       }
@@ -356,34 +255,86 @@ export const ProductDetailPage = () => {
     });
   };
 
-  // Tính tổng giá trị đơn hàng tức thời
-  const currentUnitPrice = selectedVariant.price + (isEngravingEnabled ? engravingPrice : 0);
+  // Tính tổng giá trị đơn hàng tức thời (bảo vệ chống null khi trang vừa mount)
+  const currentUnitPrice = (selectedVariant?.price || 0) + (isEngravingEnabled ? engravingPrice : 0);
   const totalPrice = currentUnitPrice * quantity;
 
   // Thêm vào giỏ hàng
   const handleAddToCart = async () => {
+    if (!selectedVariant) {
+      toast.warning('Vui lòng chọn phân loại dáng bình trước.');
+      return false;
+    }
+    if (!isAuthenticated) {
+      toast.warning('Vui lòng đăng nhập để thêm tác phẩm vào giỏ hàng');
+      navigate(`${ROUTES.LOGIN}?redirect=${encodeURIComponent(location.pathname)}`);
+      return false;
+    }
     try {
       if (addToCart) {
-        await addToCart(selectedVariant.id, quantity);
+        const success = await addToCart(selectedVariant.id, quantity);
+        return success;
       }
-      toast.success(
-        `Đã thêm ${quantity} x "${product.title} - ${selectedVariant.name}" vào giỏ hàng!`
-      );
+      return false;
     } catch (err) {
-      toast.info(`Đã lưu "${product.title}" vào giỏ hàng tạm thời.`);
+      toast.error('Có lỗi xảy ra khi thêm vào giỏ hàng.');
+      return false;
     }
   };
 
-  // Đặt mua ngay (chuyển hướng sang giỏ hàng / thanh toán)
+  // Đặt mua ngay tác phẩm (Thêm vào giỏ và chuyển thẳng sang Checkout)
   const handleBuyNow = async () => {
-    await handleAddToCart();
-    navigate(ROUTES.CART);
+    if (!selectedVariant) {
+      toast.warning('Vui lòng chọn phân loại dáng bình trước.');
+      return;
+    }
+    if (!isAuthenticated) {
+      toast.warning('Vui lòng đăng nhập để tiến hành đặt đơn tác phẩm');
+      navigate(`${ROUTES.LOGIN}?redirect=${encodeURIComponent(ROUTES.CHECKOUT)}`);
+      return;
+    }
+    const success = await addToCart(selectedVariant.id, quantity);
+    if (success) {
+      navigate(ROUTES.CHECKOUT);
+    }
   };
 
   // Cuộn mượt lên đầu trang khi mở
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full bg-[#faf5ee] min-h-[60vh] flex flex-col items-center justify-center p-8 text-center font-sans">
+        <div className="w-10 h-10 border-3 border-[#c2652a]/20 border-t-[#c2652a] rounded-full animate-spin mb-4"></div>
+        <p className="text-xs uppercase tracking-widest text-[#735e4d] font-semibold">
+          Đang tải chi tiết tác phẩm gốm mộc...
+        </p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="w-full bg-[#faf5ee] min-h-[60vh] flex flex-col items-center justify-center p-8 text-center font-sans">
+        <div className="max-w-md p-8 rounded-2xl bg-white border border-[#ebdcd0] shadow-sm space-y-4">
+          <span className="material-symbols-outlined text-4xl text-[#c2652a]">search_off</span>
+          <h2 className="font-serif text-2xl font-bold text-[#26201b]">Không tìm thấy tác phẩm</h2>
+          <p className="text-xs text-[#735e4d] leading-relaxed">
+            Tác phẩm gốm mộc này có thể đã xuất xưởng hoặc không còn lưu hành tại xưởng.
+          </p>
+          <Link
+            to={ROUTES.COLLECTION}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#c2652a] text-white text-xs font-semibold hover:bg-[#a8521d] transition-all"
+          >
+            <span>Khám phá Bộ Sưu Tập</span>
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-[#faf5ee] min-h-screen text-[#3a302a] pb-24">
@@ -406,12 +357,6 @@ export const ProductDetailPage = () => {
               {product.title}
             </span>
           </nav>
-
-          {/* Huy hiệu tình trạng mẻ lò */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f2ece4] border border-[#d8d0c8]/60 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="font-medium text-[#3a302a]">{product.statusBadge}</span>
-          </div>
         </div>
 
         {/* ========================================================= */}
@@ -535,13 +480,10 @@ export const ProductDetailPage = () => {
           {/* CỘT PHẢI: THÔNG ĐIỆP, ĐỊNH GIÁ, PHÂN LOẠI & THAO TÁC (5 CỘT) */}
           <div className="lg:col-span-5 flex flex-col">
             
-            {/* Mã tác phẩm & Tên bộ sưu tập */}
-            <div className="flex items-center justify-between text-xs text-[#78706a] mb-2 font-sans">
+            {/* Bộ sưu tập tác phẩm */}
+            <div className="flex items-center text-xs text-[#78706a] mb-2 font-sans">
               <span className="tracking-widest uppercase font-semibold text-[#c2652a]">
                 {product.collection}
-              </span>
-              <span className="font-mono text-[#9a9088] bg-[#f2ece4] px-2 py-0.5 rounded">
-                MÃ: {product.code}
               </span>
             </div>
 
@@ -577,7 +519,7 @@ export const ProductDetailPage = () => {
             <div className="p-5 rounded-2xl bg-[#f6f0e8] border border-[#e6e0d6] mb-6 shadow-2xs">
               <div className="flex items-baseline gap-3 flex-wrap">
                 <span className="font-serif text-3xl sm:text-4xl font-semibold text-[#c2652a]">
-                  {formatCurrency(selectedVariant.price)}
+                  {formatCurrency(selectedVariant?.price || product.basePrice || 0)}
                 </span>
                 <span className="text-sm text-[#9a9088] line-through font-sans">
                   {formatCurrency(product.originalPrice)}
@@ -598,13 +540,13 @@ export const ProductDetailPage = () => {
                   Chọn Phân Loại Dáng Bình
                 </span>
                 <span className="text-[#c2652a] font-medium">
-                  Đang chọn: {selectedVariant.name}
+                  Đang chọn: {selectedVariant?.name || 'Mặc định'}
                 </span>
               </div>
 
               <div className="grid grid-cols-3 gap-2.5" id="variant-group">
                 {product.variants.map((v) => {
-                  const isSelected = selectedVariant.id === v.id;
+                  const isSelected = selectedVariant?.id === v.id;
                   return (
                     <button
                       key={v.id}
@@ -696,7 +638,7 @@ export const ProductDetailPage = () => {
                 <button
                   type="button"
                   onClick={() => handleUpdateQty(1)}
-                  disabled={quantity >= selectedVariant.stock}
+                  disabled={quantity >= (selectedVariant?.stock ?? 999)}
                   className="w-9 h-9 rounded-lg flex items-center justify-center text-[#605850] hover:bg-white hover:text-[#c2652a] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                   aria-label="Tăng số lượng"
                 >
@@ -801,26 +743,13 @@ export const ProductDetailPage = () => {
         {/* 3. KHU VỰC ĐÁNH GIÁ - BÌNH LUẬN */}
         {/* ========================================================= */}
         <section className="mt-16 sm:mt-24 pt-10 border-t border-[#e6dcce]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="font-serif text-2xl sm:text-3xl font-medium text-[#3a302a]">
-                Đánh Giá - Bình Luận
-              </h2>
-              <p className="text-xs text-[#78706a] mt-1">
-                Ý kiến đánh giá và cảm nhận thực tế từ những khách hàng đã sở hữu tác phẩm.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsReviewModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl border border-[#c2652a] text-[#c2652a] hover:bg-[#faefe4] text-xs font-semibold transition-colors self-start sm:self-auto cursor-pointer flex items-center gap-1.5"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Viết Đánh Giá - Bình Luận</span>
-            </button>
+          <div className="mb-6">
+            <h2 className="font-serif text-2xl sm:text-3xl font-medium text-[#3a302a]">
+              Đánh Giá - Bình Luận
+            </h2>
+            <p className="text-xs text-[#78706a] mt-1">
+              Ý kiến đánh giá và cảm nhận thực tế từ những khách hàng đã sở hữu tác phẩm.
+            </p>
           </div>
 
           {/* Khối thống kê điểm đánh giá */}

@@ -35,6 +35,45 @@ export function formatDate(dateString, withTime = true) {
 }
 
 /**
+ * Định dạng số điện thoại chuẩn Việt Nam dạng chấm: 0911.111.111 (4-3-3 số)
+ * Giúp người dùng dễ nhìn, đếm đủ 10 chữ số
+ * @param {string|number} phone
+ * @returns {string}
+ */
+export function formatPhoneNumber(phone) {
+  if (!phone) return '';
+  let cleaned = String(phone).replace(/\D/g, '');
+
+  // Xử lý tiền tố quốc tế 84
+  if (cleaned.startsWith('84') && cleaned.length > 9) {
+    cleaned = '0' + cleaned.slice(2);
+  }
+
+  // Tối đa 10 chữ số chuẩn di động VN
+  if (cleaned.length <= 4) {
+    return cleaned;
+  }
+  if (cleaned.length <= 7) {
+    return `${cleaned.slice(0, 4)}.${cleaned.slice(4)}`;
+  }
+  return `${cleaned.slice(0, 4)}.${cleaned.slice(4, 7)}.${cleaned.slice(7, 10)}`;
+}
+
+/**
+ * Làm sạch số điện thoại chỉ còn chữ số để lưu vào database
+ * @param {string|number} phone
+ * @returns {string}
+ */
+export function cleanPhoneNumber(phone) {
+  if (!phone) return '';
+  let cleaned = String(phone).replace(/\D/g, '');
+  if (cleaned.startsWith('84') && cleaned.length > 9) {
+    cleaned = '0' + cleaned.slice(2);
+  }
+  return cleaned;
+}
+
+/**
  * Rút trích thông điệp lỗi thân thiện từ phản hồi Axios / BE
  */
 export function getErrorMessage(error, defaultMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại.') {

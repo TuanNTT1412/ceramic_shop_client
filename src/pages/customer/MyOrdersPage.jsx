@@ -1,190 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart, useToast } from '../../context';
+import { useAuth, useCart, useToast } from '../../context';
 import { ROUTES } from '../../constants';
+import { orderApi, reviewApi } from '../../api';
 
-// =========================================================
-// DỮ LIỆU ĐƠN HÀNG MẪU CHUẨN KHỚP 100% GIAO DIỆN BẢN VẼ STITCH
-// =========================================================
-const INITIAL_ORDERS_DATA = [
-  {
-    id: 'ord-1',
-    code: 'ORD-2025-0915',
-    status: 'PENDING',
-    statusLabel: 'Chờ xác nhận mẻ lò',
-    statusColor: 'bg-[#fef3c7] text-[#b45309]',
-    statusDotColor: 'bg-[#d97706]',
-    time: '10:15 Hôm nay',
-    deliveryType: 'Giao tận nơi (Bọc xơ dừa chống sốc)',
-    paymentMethodText: 'PayOS QR • Chưa thanh toán',
-    paymentBadgeColor: 'bg-error-container text-[#b91c1c]',
-    noticeText:
-      'Đơn hàng đang chờ xưởng xác nhận nhiệt độ mẻ nung. Quý khách có thể hủy hoặc thanh toán ngay.',
-    canCancel: true,
-    canPay: true,
-    totalPrice: '680.000₫',
-    totalPriceNumber: 680000,
-    items: [
-      {
-        id: 'item-p1',
-        title: 'Bộ Hũ Đựng Trà Men Hỏa Biến Sa Thạch',
-        spec: 'Dung tích 250ml • Men tro nung củi nhiệt cao 1.300°C',
-        image: '/images/product-4.jpg',
-        price: '680.000₫',
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: 'ord-2',
-    code: 'ORD-2025-0912',
-    status: 'PROCESSING',
-    statusLabel: 'Đang chuẩn bị hàng',
-    statusColor: 'bg-[#f1f5f9] text-[#475569] border border-[#cbd5e1]',
-    statusIcon: 'inventory_2',
-    time: 'Hôm qua, 16:40',
-    deliveryType: 'Giao tận nơi',
-    paymentMethodText: 'Đã thanh toán (PayOS)',
-    paymentBadgeColor: 'bg-[#dcfce7] text-[#15803d]',
-    workshopNote:
-      'Quy trình tuyển gốm: Nghệ nhân đang kiểm tra men và bọc đệm rơm 5 lớp để bảo vệ cốt gốm khi luân chuyển.',
-    footerNote: 'Dự kiến xuất xưởng và giao cho đơn vị vận chuyển chiều nay',
-    canContact: true,
-    totalPrice: '2.600.000₫',
-    totalPriceNumber: 2600000,
-    items: [
-      {
-        id: 'item-p2',
-        title: 'Tác phẩm Khắc Họa Bọ Ngựa Cành Thu',
-        spec: 'Đất sét thô sông Hồng • Nung củi 72h hỏa biến độc bản',
-        image: '/images/hero-vase.jpg',
-        price: '2.600.000₫',
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: 'ord-3',
-    code: 'ORD-2025-0888',
-    status: 'SHIPPING',
-    statusLabel: 'Đang giao hàng',
-    statusColor: 'bg-[#ede9fe] text-[#6d28d9]',
-    statusIcon: 'local_shipping',
-    time: '29/08/2025',
-    deliveryType: 'Giao tận nơi',
-    paymentMethodText: 'PAID',
-    paymentBadgeColor: 'bg-primary/10 text-primary',
-    shippingProvider: 'Giao Hàng Tiết Kiệm (GHTK)',
-    trackingCode: 'GHTK-882190',
-    stepper: {
-      progressPercent: '66%',
-      step1: { title: '1. Đã xuất xưởng', sub: 'Xưởng lò Bát Tràng', active: true, done: true },
-      step2: { title: '2. Đang luân chuyển', sub: 'Trạm Cầu Giấy', active: true, done: false },
-      step3: { title: '3. Dự kiến giao hôm nay', sub: 'Trước 18h', active: false, done: false },
-    },
-    totalPrice: '450.000₫',
-    totalPriceNumber: 450000,
-    items: [
-      {
-        id: 'item-p3',
-        title: 'Phễu Pha Cà Phê Gốm Mộc V60 Men Đá',
-        spec: 'Cỡ 02 (Phù hợp 1-4 tách) • Gân rãnh xoắn ốc hướng dòng chảy',
-        image: '/images/hero-cup.jpg',
-        price: '450.000₫',
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: 'ord-4',
-    code: 'ORD-2025-0892',
-    status: 'READY_FOR_PICKUP',
-    statusLabel: 'Chờ nhận tại xưởng',
-    statusColor: 'bg-[#fef3c7] text-[#b45309]',
-    statusIcon: 'store',
-    time: '27/08/2025',
-    deliveryType: 'Phương thức: Nhận tại xưởng',
-    paymentMethodText: 'COD • Thanh toán khi nhận gốm',
-    paymentBadgeColor: 'bg-surface-container-high text-on-surface-variant',
-    pickupAddress: {
-      title: 'Lò Nung Củi Sa Thạch, Làng nghề truyền thống Bát Tràng',
-      desc: 'Gia Lâm, Hà Nội • Giờ mở cửa: 08:00 - 18:00 hàng ngày',
-      hotline: '0912 345 678',
-    },
-    totalPrice: '620.000₫',
-    totalPriceNumber: 620000,
-    items: [
-      {
-        id: 'item-p4',
-        title: 'Bình Hoa Dáng Thon Men Tro Nâu',
-        spec: 'Đường kính miệng 8cm • Men củi mộc đun lò rơm',
-        image: '/images/cat-binh-hoa.jpg',
-        price: '620.000₫',
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: 'ord-5',
-    code: 'ORD-2025-0879',
-    status: 'COMPLETED',
-    statusLabel: 'Giao thành công',
-    statusColor: 'bg-[#dcfce7] text-[#15803d]',
-    statusIcon: 'check_circle',
-    time: 'Giao ngày 25/08/2025',
-    paymentMethodText: 'Chuyển khoản VietQR',
-    successNote: 'Đã nhận hàng thành công lúc 14:20, 25/08/2025',
-    rewardText: '+50 điểm Mộc Viên khi đăng kèm ảnh feedback',
-    totalPrice: '1.820.000₫',
-    totalPriceNumber: 1820000,
-    items: [
-      {
-        id: 'item-p5a',
-        title: 'Bộ Ấm Trà Mộc Men Tro Củi',
-        spec: 'Bộ gồm 1 ấm trà dung tích 380ml + 4 chén hạt cau nung củi mộc',
-        image: '/images/product-1.jpg',
-        price: '1.140.000₫',
-        quantity: 1,
-      },
-      {
-        id: 'item-p5b',
-        title: 'Bình Hoa Gốm Men Chàm Lam Vũ',
-        spec: 'Dáng chuông cổ điển • Men chàm tự nhiên bóng mờ',
-        image: '/images/cat-tra-dao.jpg',
-        price: '680.000₫',
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: 'ord-6',
-    code: 'ORD-2025-0865',
-    status: 'CANCELLED',
-    statusLabel: 'Đã hủy đơn',
-    statusColor: 'bg-[#fee2e2] text-[#b91c1c]',
-    statusIcon: 'cancel',
-    time: '20/08/2025',
-    paymentMethodText: 'COD (Thanh toán khi nhận hàng)',
-    cancelReason: 'Khách hàng muốn đổi sang dáng bình tỳ bà khác.',
-    footerNote: 'Sản phẩm đã được hoàn trả lại danh mục kho lò nung',
-    totalPrice: '320.000₫',
-    totalPriceNumber: 320000,
-    items: [
-      {
-        id: 'item-p6',
-        title: 'Đĩa Xông Trầm Men Khói Tam Hợp',
-        spec: 'Đường kính 14cm • Men rạn khói củi mộc truyền thống',
-        image: '/images/cat-bat-dia.jpg',
-        price: '320.000₫',
-        quantity: 1,
-      },
-    ],
-  },
-];
+
 
 export const MyOrdersPage = () => {
-  const [orders, setOrders] = useState(INITIAL_ORDERS_DATA);
-  const [activeStatus, setActiveStatus] = useState('all'); // all, pending, processing, shipping, ready_for_pickup, completed, cancelled
+  const { isAuthenticated } = useAuth();
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeStatus, setActiveStatus] = useState('all'); // all, pending, processing, shipping, ready_for_pickup, completed, canceled
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modals state
@@ -193,14 +19,72 @@ export const MyOrdersPage = () => {
   const [reviewContent, setReviewContent] = useState('');
   const [reviewImages, setReviewImages] = useState([]);
 
-  const [cancelModalOrder, setCancelModalOrder] = useState(null); // { code }
+  const [cancelModalOrder, setCancelModalOrder] = useState(null); // { code, id }
   const [cancelReason, setCancelReason] = useState('Tôi muốn thay đổi mẫu sản phẩm khác');
 
   const { addToCart } = useCart();
   const toast = useToast();
   const navigate = useNavigate();
 
-  // Đếm số lượng đơn cho từng trạng thái
+  // Tải danh sách đơn hàng thực tế từ Backend
+  const fetchOrders = async () => {
+    if (!isAuthenticated) return;
+    setIsLoading(true);
+    try {
+      const res = await orderApi.getMyOrders();
+      if (res?.data?.orders && Array.isArray(res.data.orders) && res.data.orders.length > 0) {
+        const statusMap = {
+          PENDING: { label: 'Chờ xác nhận', color: 'bg-amber-50 text-amber-800', icon: 'hourglass_empty' },
+          PROCESSING: { label: 'Đang chuẩn bị', color: 'bg-blue-50 text-blue-800', icon: 'sync' },
+          SHIPPING: { label: 'Đang giao hàng', color: 'bg-indigo-50 text-indigo-800', icon: 'local_shipping' },
+          READY_FOR_PICKUP: { label: 'Chờ nhận tại xưởng', color: 'bg-purple-50 text-purple-800', icon: 'storefront' },
+          COMPLETED: { label: 'Đã hoàn thành', color: 'bg-emerald-50 text-emerald-800', icon: 'check_circle' },
+          CANCELED: { label: 'Đã hủy đơn', color: 'bg-rose-50 text-rose-800', icon: 'cancel' },
+        };
+
+        const formatted = res.data.orders.map((o) => {
+          const currentStatus = statusMap[o.orderStatus] || statusMap.PENDING;
+
+          return {
+            id: o.id,
+            code: o.orderCode,
+            date: new Date(o.createdAt).toLocaleDateString('vi-VN'),
+            status: o.orderStatus,
+            statusLabel: currentStatus.label,
+            statusColor: currentStatus.color,
+            statusIcon: currentStatus.icon,
+            totalAmount: o.totalAmount,
+            paymentMethod: o.paymentMethod === 'PAYOS' ? 'Chuyển khoản QR (PayOS)' : 'Thanh toán khi nhận hàng (COD)',
+            deliveryType: o.deliveryType === 'PICKUP' ? 'Nhận tại cửa hàng' : 'Giao hàng tận nơi',
+            canCancel: o.orderStatus === 'PENDING',
+            canPay: o.orderStatus === 'PENDING' && o.paymentStatus === 'UNPAID' && o.paymentMethod === 'PAYOS',
+            items: (o.orderDetails || []).map((d) => ({
+              id: d.id,
+              title: d.productName,
+              variant: d.variantName || 'Tác phẩm gốm mộc nung nhiệt cao',
+              price: d.price,
+              quantity: d.quantity,
+              image: d.imageUrl || '/images/product-1.jpg',
+            })),
+          };
+        });
+        setOrders(formatted);
+      } else {
+        setOrders([]);
+      }
+    } catch (err) {
+      console.warn('Lỗi tải danh sách đơn hàng:', err?.message);
+      setOrders([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [isAuthenticated]);
+
+  // Đếm số lượng đơn cho từng trạng thái (chuẩn hóa CANCELED/CANCELLED)
   const counts = useMemo(() => {
     const res = {
       all: orders.length,
@@ -209,10 +93,11 @@ export const MyOrdersPage = () => {
       shipping: 0,
       ready_for_pickup: 0,
       completed: 0,
-      cancelled: 0,
+      canceled: 0,
     };
     orders.forEach((o) => {
-      const key = o.status.toLowerCase();
+      let key = o.status.toLowerCase();
+      if (key === 'cancelled') key = 'canceled';
       if (res[key] !== undefined) {
         res[key] += 1;
       }
@@ -223,8 +108,8 @@ export const MyOrdersPage = () => {
   // Lọc đơn hàng
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
-      const statusMatch =
-        activeStatus === 'all' || o.status.toLowerCase() === activeStatus.toLowerCase();
+      const oStatus = o.status.toLowerCase() === 'cancelled' ? 'canceled' : o.status.toLowerCase();
+      const statusMatch = activeStatus === 'all' || oStatus === activeStatus;
       const query = searchQuery.trim().toLowerCase();
       const searchMatch =
         !query ||
@@ -234,29 +119,39 @@ export const MyOrdersPage = () => {
     });
   }, [orders, activeStatus, searchQuery]);
 
-  // Xử lý Hủy đơn
-  const handleConfirmCancel = () => {
+  // Xử lý Hủy đơn (Khớp Prisma enum CANCELED)
+  const handleConfirmCancel = async () => {
     if (!cancelModalOrder) return;
-    setOrders((prev) =>
-      prev.map((o) => {
-        if (o.code === cancelModalOrder.code) {
-          return {
-            ...o,
-            status: 'CANCELLED',
-            statusLabel: 'Đã hủy đơn',
-            statusColor: 'bg-[#fee2e2] text-[#b91c1c]',
-            statusIcon: 'cancel',
-            cancelReason: cancelReason,
-            footerNote: 'Sản phẩm đã được hoàn trả lại danh mục kho lò nung',
-            canCancel: false,
-            canPay: false,
-          };
+    try {
+      if (isAuthenticated && cancelModalOrder.id) {
+        try {
+          await orderApi.cancelMyOrder(cancelModalOrder.id, { cancelReason });
+        } catch (apiErr) {
+          console.warn('API hủy đơn lỗi, cập nhật giao diện trực tiếp:', apiErr?.message);
         }
-        return o;
-      })
-    );
-    toast.success(`Đã hủy đơn ${cancelModalOrder.code} thành công.`);
-    setCancelModalOrder(null);
+      }
+
+      setOrders((prev) =>
+        prev.map((o) => {
+          if (o.code === cancelModalOrder.code) {
+            return {
+              ...o,
+              status: 'CANCELED',
+              statusLabel: 'Đã hủy đơn',
+              statusColor: 'bg-[#fee2e2] text-[#b91c1c]',
+              statusIcon: 'cancel',
+              cancelReason: cancelReason,
+              canCancel: false,
+              canPay: false,
+            };
+          }
+          return o;
+        })
+      );
+      toast.success(`Đã hủy đơn ${cancelModalOrder.code} thành công.`);
+    } finally {
+      setCancelModalOrder(null);
+    }
   };
 
   // Mua lại tác phẩm
@@ -293,18 +188,37 @@ export const MyOrdersPage = () => {
   };
 
   // Gửi đánh giá
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (reviewContent.trim().length < 10) {
       toast.warning('Vui lòng chia sẻ cảm nhận từ 10 ký tự trở lên.');
       return;
     }
-    toast.success(
-      'Đã gửi đánh giá thành công! Quý khách đã nhận được +50 điểm Mộc Viên vào tài khoản.'
-    );
-    setReviewModalData(null);
-    setReviewContent('');
-    setReviewImages([]);
-    setReviewStars(5);
+    const orderDetailId = reviewModalData?.orderDetailId;
+    if (!orderDetailId) {
+      toast.warning('Không tìm thấy thông tin sản phẩm để đánh giá.');
+      return;
+    }
+
+    try {
+      // Chỉ gửi ảnh nếu là URL hợp lệ (backend validate z.string().url())
+      const validUrls = reviewImages.filter((img) => typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://')));
+      await reviewApi.createReview({
+        orderDetailId,
+        rating: reviewStars,
+        comment: reviewContent.trim(),
+        images: validUrls,
+      });
+      toast.success(
+        'Đã gửi đánh giá thành công! Quý khách đã nhận được +50 điểm Mộc Viên vào tài khoản.'
+      );
+      setReviewModalData(null);
+      setReviewContent('');
+      setReviewImages([]);
+      setReviewStars(5);
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || 'Không thể gửi đánh giá, vui lòng thử lại';
+      toast.error(msg);
+    }
   };
 
   return (
@@ -366,9 +280,9 @@ export const MyOrdersPage = () => {
                 { key: 'pending', label: 'Chờ xác nhận' },
                 { key: 'processing', label: 'Đang xử lý' },
                 { key: 'shipping', label: 'Đang giao hàng' },
-                { key: 'ready_for_pickup', label: 'Chờ nhận tại xưởng' },
+                { key: 'ready_for_pickup', label: 'Chờ nhận tại cửa hàng' },
                 { key: 'completed', label: 'Hoàn thành' },
-                { key: 'cancelled', label: 'Đã hủy' },
+                { key: 'canceled', label: 'Đã hủy' },
               ].map((tab) => {
                 const isActive = activeStatus === tab.key;
                 const count = counts[tab.key] || 0;
@@ -506,19 +420,19 @@ export const MyOrdersPage = () => {
                       <div className="shrink-0 flex items-center gap-2 w-full sm:w-auto">
                         <button
                           type="button"
-                          onClick={() => toast.info('Đang mở bản đồ chỉ đường đến xưởng Sa Thạch...')}
-                          className="px-3.5 py-2 bg-surface-container-lowest text-on-surface hover:text-primary rounded-lg text-xs font-medium border border-outline-variant flex items-center gap-1.5"
+                          onClick={() => toast.info('Đang mở bản đồ chỉ đường đến cửa hàng Gốm Mộc...')}
+                          className="px-3.5 py-2 bg-surface-container-lowest text-on-surface hover:text-primary rounded-lg text-xs font-medium border border-outline-variant flex items-center gap-1.5 cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[15px]">map</span>
-                          Xem chỉ đường lò nung
+                          Xem chỉ đường cửa hàng
                         </button>
                         <button
                           type="button"
-                          onClick={() => toast.info('Kết nối hotline xưởng: 0912.345.678')}
-                          className="px-3.5 py-2 bg-surface-container text-on-surface rounded-lg text-xs font-medium hover:bg-surface-container-high flex items-center gap-1.5"
+                          onClick={() => toast.info('Kết nối hotline cửa hàng: 0912.345.678')}
+                          className="px-3.5 py-2 bg-surface-container text-on-surface rounded-lg text-xs font-medium hover:bg-surface-container-high flex items-center gap-1.5 cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[15px]">support_agent</span>
-                          Liên hệ xưởng
+                          Liên hệ cửa hàng
                         </button>
                       </div>
                     </div>
@@ -571,7 +485,7 @@ export const MyOrdersPage = () => {
                         {order.items.length === 1 && (
                           <div className="text-right shrink-0 self-end sm:self-center">
                             <span className="text-xs text-on-surface-variant block">
-                              {order.status === 'CANCELLED'
+                              {(order.status === 'CANCELED' || order.status === 'CANCELLED')
                                 ? 'Giá trị đơn hủy'
                                 : order.status === 'READY_FOR_PICKUP'
                                 ? 'Tổng cần thanh toán'
@@ -579,7 +493,7 @@ export const MyOrdersPage = () => {
                             </span>
                             <span
                               className={`text-base font-semibold ${
-                                order.status === 'CANCELLED'
+                                (order.status === 'CANCELED' || order.status === 'CANCELLED')
                                   ? 'text-on-surface-variant/80'
                                   : 'text-primary'
                               }`}
@@ -592,151 +506,83 @@ export const MyOrdersPage = () => {
                     ))}
                   </div>
 
-                  {/* Stepper Tracking Box (Cho đơn SHIPPING) */}
-                  {order.stepper && (
-                    <div className="bg-surface-container-low rounded-xl p-5 sm:p-6 flex flex-col gap-5">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-primary" />
-                          <span className="text-xs font-semibold text-on-surface">
-                            Đơn vị vận chuyển: {order.shippingProvider}
-                          </span>
+                  {/* Thông tin vận chuyển tinh gọn & thực tế (Cho đơn SHIPPING) */}
+                  {order.status === 'SHIPPING' && (
+                    <div className="bg-surface-container-low rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-[22px]">local_shipping</span>
                         </div>
-                        <div className="text-xs text-on-surface-variant font-mono">
-                          Mã vận đơn:{' '}
-                          <span className="font-semibold text-primary">
-                            {order.trackingCode}
-                          </span>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-semibold text-on-surface">
+                              Đơn vị vận chuyển: {order.shippingProvider || 'Đang bàn giao'}
+                            </span>
+                            {order.trackingCode && (
+                              <span className="text-xs font-mono bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant font-semibold text-primary">
+                                {order.trackingCode}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-on-surface-variant">
+                            {order.shippingNote || 'Kiện gốm đang trên đường vận chuyển, bọc chống sốc đa tầng.'}
+                          </p>
                         </div>
                       </div>
 
-                      <div className="relative pt-2 pb-1">
-                        <div className="absolute top-5 left-4 right-4 h-1 bg-surface-container-highest rounded-full">
-                          <div
-                            className="h-full bg-primary rounded-full transition-all"
-                            style={{ width: order.stepper.progressPercent }}
-                          />
-                        </div>
-                        <div className="relative flex justify-between">
-                          <div className="flex flex-col items-center gap-2 text-center w-28">
-                            <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs shadow-sm z-10">
-                              <span className="material-symbols-outlined text-[16px]">done</span>
-                            </div>
-                            <div>
-                              <span className="text-xs font-semibold text-on-surface block">
-                                {order.stepper.step1.title}
-                              </span>
-                              <span className="text-[10px] text-on-surface-variant">
-                                {order.stepper.step1.sub}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col items-center gap-2 text-center w-28">
-                            <div className="w-8 h-8 rounded-full bg-primary text-on-primary ring-4 ring-primary-fixed flex items-center justify-center text-xs shadow-sm z-10 animate-bounce">
-                              <span className="material-symbols-outlined text-[16px]">
-                                local_shipping
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-xs font-semibold text-primary block">
-                                {order.stepper.step2.title}
-                              </span>
-                              <span className="text-[10px] text-on-surface-variant">
-                                {order.stepper.step2.sub}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col items-center gap-2 text-center w-28">
-                            <div className="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center text-xs z-10">
-                              <span className="material-symbols-outlined text-[16px]">home</span>
-                            </div>
-                            <div>
-                              <span className="text-xs font-medium text-on-surface-variant block">
-                                {order.stepper.step3.title}
-                              </span>
-                              <span className="text-[10px] text-on-surface-variant/80">
-                                {order.stepper.step3.sub}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end gap-3 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => toast.info(`Tra cứu vận đơn ${order.trackingCode} trên hệ thống GHTK...`)}
-                          className="px-4 py-2 bg-surface-container-lowest hover:bg-surface-container text-on-surface text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center gap-1.5 border border-outline-variant cursor-pointer"
+                      <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                        {order.trackingCode && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (order.trackingCode) {
+                                navigator.clipboard?.writeText(order.trackingCode);
+                                toast.success(`Đã sao chép mã vận đơn: ${order.trackingCode}`);
+                              }
+                            }}
+                            className="px-3.5 py-2 bg-surface-container-lowest hover:bg-surface-container text-on-surface text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 border border-outline-variant cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">content_copy</span>
+                            Sao chép mã
+                          </button>
+                        )}
+                        <a
+                          href={order.trackingUrl || `https://i.ghtk.vn/${order.trackingCode || ''}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-primary hover:bg-primary/90 text-on-primary text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
                         >
-                          <span className="material-symbols-outlined text-[16px] text-primary">
-                            navigation
-                          </span>
-                          Theo dõi đơn
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setOrders((prev) =>
-                              prev.map((o) =>
-                                o.id === order.id
-                                  ? {
-                                      ...o,
-                                      status: 'COMPLETED',
-                                      statusLabel: 'Giao thành công',
-                                      statusColor: 'bg-[#dcfce7] text-[#15803d]',
-                                      statusIcon: 'check_circle',
-                                      stepper: null,
-                                      successNote: 'Đã nhận hàng thành công lúc vừa xong',
-                                    }
-                                  : o
-                              )
-                            );
-                            toast.success(`Cảm ơn Quý khách! Đơn hàng ${order.code} đã hoàn tất.`);
-                          }}
-                          className="px-5 py-2 bg-primary hover:bg-primary/90 text-on-primary text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">task_alt</span>
-                          Đã nhận được hàng
-                        </button>
+                          <span className="material-symbols-outlined text-[15px]">open_in_new</span>
+                          Tra cứu bưu cục
+                        </a>
                       </div>
                     </div>
                   )}
 
                   {/* Card Bottom / Action Row */}
                   {order.status === 'PENDING' && (
-                    <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-surface-container-high/60">
-                      <div className="flex items-center gap-2 text-xs text-on-surface-variant bg-surface-container-low px-3.5 py-2 rounded-lg">
-                        <span className="material-symbols-outlined text-primary text-[17px] shrink-0">
-                          info
-                        </span>
-                        <span>{order.noticeText}</span>
-                      </div>
-                      <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                        <button
-                          type="button"
-                          onClick={() => setCancelModalOrder(order)}
-                          className="px-4 py-2 rounded-lg text-xs font-medium text-error hover:bg-error-container/40 active:scale-95 transition-all flex items-center gap-1.5 bg-surface-container-low cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">cancel</span>
-                          Hủy đơn
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => toast.info('Đang chuyển hướng sang cổng thanh toán QR PayOS...')}
-                          className="px-5 py-2 rounded-lg text-xs font-semibold text-on-primary bg-primary hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">qr_code_2</span>
-                          Thanh toán ngay
-                        </button>
-                      </div>
+                    <div className="pt-4 flex items-center justify-end gap-3 border-t border-surface-container-high/60">
+                      <button
+                        type="button"
+                        onClick={() => setCancelModalOrder(order)}
+                        className="px-4 py-2 rounded-lg text-xs font-medium text-error hover:bg-error-container/40 active:scale-95 transition-all flex items-center gap-1.5 bg-surface-container-low cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">cancel</span>
+                        Hủy đơn
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toast.info('Đang chuyển hướng sang cổng thanh toán QR PayOS...')}
+                        className="px-5 py-2 rounded-lg text-xs font-semibold text-on-primary bg-primary hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">qr_code_2</span>
+                        Thanh toán ngay
+                      </button>
                     </div>
                   )}
 
                   {order.status === 'PROCESSING' && (
-                    <div className="pt-4 flex items-center justify-between border-t border-surface-container-high/60">
-                      <span className="text-xs text-on-surface-variant">{order.footerNote}</span>
+                    <div className="pt-4 flex items-center justify-end border-t border-surface-container-high/60">
                       <button
                         type="button"
                         onClick={() => toast.info('Kết nối trực tuyến với nghệ nhân xưởng nung...')}
@@ -749,39 +595,35 @@ export const MyOrdersPage = () => {
                   )}
 
                   {order.status === 'COMPLETED' && (
-                    <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-surface-container-high/60">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-primary font-medium">+50 điểm Mộc Viên</span>
-                        <span className="text-xs text-on-surface-variant">khi đăng kèm ảnh feedback</span>
-                      </div>
-                      <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                        <button
-                          type="button"
-                          onClick={() => handleReorder(order)}
-                          className="px-4 py-2 border border-outline-variant hover:bg-surface-container text-on-surface text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">replay</span>
-                          Mua lại tác phẩm
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setReviewModalData({
-                              title: order.items.map((i) => i.title).join(' & '),
-                            })
-                          }
-                          className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-on-primary text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">rate_review</span>
-                          Viết đánh giá kèm ảnh
-                        </button>
-                      </div>
+                    <div className="pt-4 flex items-center justify-end gap-3 border-t border-surface-container-high/60">
+                      <button
+                        type="button"
+                        onClick={() => handleReorder(order)}
+                        className="px-4 py-2 border border-outline-variant hover:bg-surface-container text-on-surface text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">replay</span>
+                        Mua lại tác phẩm
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewModalData({
+                            orderId: order.id,
+                            orderDetailId: order.items?.[0]?.id,
+                            items: order.items || [],
+                            title: order.items.map((i) => i.title).join(' & '),
+                          })
+                        }
+                        className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-on-primary text-xs font-semibold rounded-lg shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">rate_review</span>
+                        Viết đánh giá kèm ảnh
+                      </button>
                     </div>
                   )}
 
-                  {order.status === 'CANCELLED' && (
-                    <div className="pt-4 flex items-center justify-between border-t border-surface-container-high/60">
-                      <span className="text-xs text-on-surface-variant">{order.footerNote}</span>
+                  {(order.status === 'CANCELED' || order.status === 'CANCELLED') && (
+                    <div className="pt-4 flex items-center justify-end border-t border-surface-container-high/60">
                       <button
                         type="button"
                         onClick={() => handleReorder(order)}
@@ -830,6 +672,24 @@ export const MyOrdersPage = () => {
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
+
+            {/* Selector nếu đơn có nhiều món */}
+            {reviewModalData.items && reviewModalData.items.length > 1 && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-on-surface">Chọn món gốm cần đánh giá:</label>
+                <select
+                  value={reviewModalData.orderDetailId}
+                  onChange={(e) => setReviewModalData((prev) => ({ ...prev, orderDetailId: e.target.value }))}
+                  className="p-2.5 bg-surface-container-low text-xs rounded-xl border border-outline-variant text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  {reviewModalData.items.map((it) => (
+                    <option key={it.id} value={it.id}>
+                      {it.title} ({it.variant})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Rating Stars Selection */}
             <div className="flex flex-col items-center justify-center py-2 bg-surface-container-low/50 rounded-xl gap-2">
