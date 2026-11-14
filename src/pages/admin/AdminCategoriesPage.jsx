@@ -291,20 +291,13 @@ export const AdminCategoriesPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
         {/* Thẻ 1 */}
         <div className="bg-surface-container-low rounded-xl p-5 shadow-xs border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <div className="flex flex-col">
-              <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
-                Tổng Số Danh Mục
-              </span>
-              <span className="font-headline text-3xl font-bold text-on-surface mt-1">
-                {String(stats.totalCategories).padStart(2, '0')}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-primary shadow-xs">
-              <span className="material-symbols-outlined text-[22px]">
-                category
-              </span>
-            </div>
+          <div className="flex flex-col">
+            <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
+              Tổng Số Danh Mục
+            </span>
+            <span className="font-sans text-3xl font-bold text-on-surface mt-1">
+              {String(stats.totalCategories).padStart(2, '0')}
+            </span>
           </div>
           <div className="mt-4 flex items-center gap-1.5 text-xs text-on-surface-variant">
             <span className="w-1.5 h-1.5 rounded-full bg-primary" />
@@ -314,18 +307,13 @@ export const AdminCategoriesPage = () => {
 
         {/* Thẻ 2 */}
         <div className="bg-surface-container-low rounded-xl p-5 shadow-xs border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <div className="flex flex-col overflow-hidden pr-2">
-              <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
-                Nhiều Tác Phẩm Nhất
-              </span>
-              <span className="font-headline text-xl font-bold text-on-surface mt-1 truncate">
-                {stats.maxCategoryName}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-secondary-fixed flex items-center justify-center text-secondary shadow-xs shrink-0">
-              <span className="material-symbols-outlined text-[22px]">star</span>
-            </div>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
+              Nhiều Tác Phẩm Nhất
+            </span>
+            <span className="font-sans text-xl font-bold text-on-surface mt-1 truncate">
+              {stats.maxCategoryName}
+            </span>
           </div>
           <div className="mt-4 flex items-center gap-1.5 text-xs text-on-surface-variant">
             <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
@@ -335,20 +323,13 @@ export const AdminCategoriesPage = () => {
 
         {/* Thẻ 3 */}
         <div className="bg-surface-container-low rounded-xl p-5 shadow-xs border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <div className="flex flex-col">
-              <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
-                Tổng Tác Phẩm Đã Phân Loại
-              </span>
-              <span className="font-headline text-3xl font-bold text-primary mt-1">
-                {stats.totalProducts}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-primary shadow-xs">
-              <span className="material-symbols-outlined text-[22px]">
-                local_fire_department
-              </span>
-            </div>
+          <div className="flex flex-col">
+            <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
+              Tổng Tác Phẩm Đã Phân Loại
+            </span>
+            <span className="font-sans text-3xl font-bold text-primary mt-1">
+              {stats.totalProducts}
+            </span>
           </div>
           <div className="mt-4 flex items-center gap-1.5 text-xs text-on-surface-variant">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -452,7 +433,7 @@ export const AdminCategoriesPage = () => {
 
                     {/* Tên Danh Mục */}
                     <td className="py-4 px-4">
-                      <span className="font-headline text-sm font-bold text-on-surface group-hover:text-primary transition-colors block">
+                      <span className="font-sans text-sm font-semibold text-on-surface group-hover:text-primary transition-colors block">
                         {cat.name}
                       </span>
                     </td>
@@ -463,14 +444,12 @@ export const AdminCategoriesPage = () => {
                     </td>
 
                     {/* Số Lượng Sản Phẩm */}
-                    <td className="py-4 px-3 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-label font-semibold bg-primary-fixed text-primary">
-                        {cat.productsCount || 0} tác phẩm
-                      </span>
+                    <td className="py-4 px-3 text-center whitespace-nowrap text-xs font-semibold text-on-surface">
+                      {cat.productsCount || 0}
                     </td>
 
                     {/* Ngày Cập Nhật */}
-                    <td className="py-4 px-3 text-center font-mono text-[11px] text-on-surface-variant whitespace-nowrap">
+                    <td className="py-4 px-3 text-center text-[11px] text-on-surface-variant whitespace-nowrap">
                       {cat.updatedAt}
                     </td>
 
@@ -481,26 +460,26 @@ export const AdminCategoriesPage = () => {
                         <button
                           type="button"
                           onClick={() => handleOpenEditModal(cat)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface text-[11px] font-label font-medium hover:bg-surface-container hover:text-primary transition-colors cursor-pointer"
+                          className="w-8 h-8 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
                           title="Chỉnh sửa danh mục"
+                          aria-label="Chỉnh sửa danh mục"
                         >
-                          <span className="material-symbols-outlined text-[15px]">
+                          <span className="material-symbols-outlined text-[16px]">
                             edit
                           </span>
-                          <span>Sửa</span>
                         </button>
 
                         {/* Nút Xóa */}
                         <button
                           type="button"
                           onClick={() => setDeleteConfirmItem(cat)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-low text-error text-[11px] font-label font-medium hover:bg-error-container hover:text-error transition-colors cursor-pointer"
+                          className="w-8 h-8 rounded-full bg-surface-container-low text-error hover:bg-error-container hover:text-error transition-colors inline-flex items-center justify-center cursor-pointer"
                           title="Xóa danh mục"
+                          aria-label="Xóa danh mục"
                         >
-                          <span className="material-symbols-outlined text-[15px]">
+                          <span className="material-symbols-outlined text-[16px]">
                             delete
                           </span>
-                          <span>Xóa</span>
                         </button>
                       </div>
                     </td>

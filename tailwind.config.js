@@ -82,9 +82,9 @@ export default {
         },
       },
       fontFamily: {
-        headline: ['"Lora"', 'serif'],
-        display: ['"Lora"', 'serif'],
-        serif: ['"Lora"', 'serif'],
+        headline: ['"Newsreader"', 'serif'],
+        display: ['"Newsreader"', 'serif'],
+        serif: ['"Newsreader"', 'serif'],
         body: ['"Be Vietnam Pro"', 'sans-serif'],
         label: ['"Be Vietnam Pro"', 'sans-serif'],
         sans: ['"Be Vietnam Pro"', 'sans-serif'],

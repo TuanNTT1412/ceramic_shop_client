@@ -641,16 +641,13 @@ export const AdminUsersPage = () => {
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Card 1: Tổng Tài Khoản */}
         <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 flex flex-col justify-between transition-all hover:border-primary/40">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-xs font-medium text-on-surface-variant tracking-wide">
               Tổng Tài Khoản
             </span>
-            <span className="w-8 h-8 rounded-xl bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">group</span>
-            </span>
           </div>
           <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-headline font-bold text-on-surface">
+            <span className="text-3xl font-sans font-bold text-on-surface">
               {metrics.totalCount}
             </span>
             <span className="inline-flex items-center text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
@@ -664,16 +661,13 @@ export const AdminUsersPage = () => {
 
         {/* Card 2: Khách Thân Thiết */}
         <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 flex flex-col justify-between transition-all hover:border-primary/40">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-xs font-medium text-on-surface-variant tracking-wide">
               Khách Thân Thiết (CUSTOMER)
             </span>
-            <span className="w-8 h-8 rounded-xl bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">loyalty</span>
-            </span>
           </div>
           <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-headline font-bold text-on-surface">
+            <span className="text-3xl font-sans font-bold text-on-surface">
               328
             </span>
             <span className="inline-flex items-center text-[11px] font-semibold text-primary bg-primary-fixed px-2 py-0.5 rounded-full border border-primary-fixed-dim/40">
@@ -687,16 +681,13 @@ export const AdminUsersPage = () => {
 
         {/* Card 3: Nhân Sự Xưởng */}
         <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 flex flex-col justify-between transition-all hover:border-primary/40">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-xs font-medium text-on-surface-variant tracking-wide">
               Nhân Sự Xưởng (STAFF &amp; ADMIN)
             </span>
-            <span className="w-8 h-8 rounded-xl bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">shield_person</span>
-            </span>
           </div>
           <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-headline font-bold text-on-surface">
+            <span className="text-3xl font-sans font-bold text-on-surface">
               14
             </span>
             <span className="text-[11px] font-medium text-on-surface-variant">
@@ -710,16 +701,13 @@ export const AdminUsersPage = () => {
 
         {/* Card 4: Tài Khoản Tạm Khóa */}
         <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 flex flex-col justify-between transition-all hover:border-error/40">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-xs font-medium text-on-surface-variant tracking-wide">
               Tài Khoản Tạm Khóa
             </span>
-            <span className="w-8 h-8 rounded-xl bg-error-container flex items-center justify-center text-error">
-              <span className="material-symbols-outlined text-[18px]">lock_person</span>
-            </span>
           </div>
           <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-headline font-bold text-error">
+            <span className="text-3xl font-sans font-bold text-error">
               {metrics.lockedCount}
             </span>
             <span className="inline-flex items-center text-[11px] font-semibold text-error bg-error-container px-2 py-0.5 rounded-full border border-error/20">
@@ -816,16 +804,14 @@ export const AdminUsersPage = () => {
                 <th className="py-3.5 px-5">Thành Viên</th>
                 <th className="py-3.5 px-4">Email &amp; Liên Hệ</th>
                 <th className="py-3.5 px-4">Vai Trò</th>
-                <th className="py-3.5 px-4">Đơn Hàng &amp; Đánh Giá</th>
                 <th className="py-3.5 px-4">Ngày Tham Gia</th>
-                <th className="py-3.5 px-4">Trạng Thái</th>
                 <th className="py-3.5 px-5 text-right">Thao Tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20 text-on-surface">
               {paginatedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
+                  <td colSpan={5} className="py-12 text-center text-on-surface-variant">
                     <span className="material-symbols-outlined text-4xl text-outline mb-2">
                       person_off
                     </span>
@@ -842,40 +828,12 @@ export const AdminUsersPage = () => {
                 </tr>
               ) : (
                 paginatedUsers.map((user, idx) => {
-                  // Role Badge
-                  let roleBadge = null;
-                  if (user.role === 'ADMIN') {
-                    roleBadge = (
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-                        ADMIN
-                      </span>
-                    );
-                  } else if (user.role === 'STAFF') {
-                    roleBadge = (
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                        STAFF
-                      </span>
-                    );
-                  } else {
-                    roleBadge = (
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                        CUSTOMER
-                      </span>
-                    );
-                  }
-
-                  // Status Badge
-                  const statusBadge = user.isActive ? (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                      Hoạt động
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-error-container text-error border border-error/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-error"></span>
-                      Đã khóa
-                    </span>
-                  );
+                  const roleName =
+                    user.role === 'ADMIN'
+                      ? 'Quản Trị Viên'
+                      : user.role === 'STAFF'
+                      ? 'Nghệ Nhân'
+                      : 'Khách Hàng';
 
                   // Row background alternating
                   const rowBg =
@@ -896,7 +854,7 @@ export const AdminUsersPage = () => {
                             <span className="font-semibold text-on-surface truncate">
                               {user.name}
                             </span>
-                            <span className="text-[11px] font-mono text-on-surface-variant/70">
+                            <span className="text-[11px] text-on-surface-variant/70">
                               {user.code}
                             </span>
                           </div>
@@ -906,7 +864,7 @@ export const AdminUsersPage = () => {
                       {/* Cột 2: Email & Sổ địa chỉ */}
                       <td className="py-4 px-4">
                         <div className="flex flex-col">
-                          <span className="font-mono text-xs text-on-surface truncate max-w-[210px]">
+                          <span className="text-xs text-on-surface truncate max-w-[210px]">
                             {user.email}
                           </span>
                           <span className="text-[11px] text-on-surface-variant inline-flex items-center gap-1 mt-0.5">
@@ -919,74 +877,63 @@ export const AdminUsersPage = () => {
                       </td>
 
                       {/* Cột 3: Vai trò */}
-                      <td className="py-4 px-4">{roleBadge}</td>
-
-                      {/* Cột 4: Đơn hàng & Đánh giá */}
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3 text-xs">
-                          <span className="inline-flex items-center gap-1 text-on-surface font-medium">
-                            <span className="material-symbols-outlined text-[15px] text-primary">
-                              receipt
-                            </span>
-                            {user._count?.orders || 0} đơn
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-on-surface-variant">
-                            <span className="material-symbols-outlined text-[15px] text-amber-600">
-                              star
-                            </span>
-                            {user._count?.reviews || 0} review
-                          </span>
-                        </div>
+                      <td className="py-4 px-4 text-xs font-medium text-on-surface">
+                        {roleName}
                       </td>
 
-                      {/* Cột 5: Ngày tham gia */}
-                      <td className="py-4 px-4 text-on-surface-variant font-mono text-[11px]">
+                      {/* Cột 4: Ngày tham gia */}
+                      <td className="py-4 px-4 text-on-surface-variant text-[11px]">
                         {formatDate(user.createdAt, false) || '15/03/2024'}
                       </td>
 
-                      {/* Cột 6: Trạng thái tài khoản */}
-                      <td className="py-4 px-4">{statusBadge}</td>
-
-                      {/* Cột 7: Thao tác */}
+                      {/* Cột 5: Thao tác */}
                       <td className="py-4 px-5 text-right">
-                        <div className="inline-flex items-center gap-1 justify-end">
+                        <div className="inline-flex items-center gap-1.5 justify-end">
                           <button
+                            type="button"
                             onClick={() => handleOpenDrawer(user)}
                             title="Xem chi tiết hồ sơ hội viên"
-                            className="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors"
+                            aria-label="Xem chi tiết hồ sơ hội viên"
+                            className="w-8 h-8 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
                           >
-                            <span className="material-symbols-outlined text-[18px]">
+                            <span className="material-symbols-outlined text-[16px]">
                               visibility
                             </span>
                           </button>
 
                           <button
+                            type="button"
                             onClick={() => handleOpenRoleModal(user)}
                             title="Phân quyền vai trò (Role)"
-                            className="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors"
+                            aria-label="Phân quyền vai trò (Role)"
+                            className="w-8 h-8 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
                           >
-                            <span className="material-symbols-outlined text-[18px]">
+                            <span className="material-symbols-outlined text-[16px]">
                               manage_accounts
                             </span>
                           </button>
 
                           {user.isActive ? (
                             <button
+                              type="button"
                               onClick={() => handlePromptToggleStatus(user)}
                               title="Khóa tài khoản"
-                              className="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
+                              aria-label="Khóa tài khoản"
+                              className="w-8 h-8 rounded-full bg-surface-container-low text-error hover:bg-error-container hover:text-error transition-colors inline-flex items-center justify-center cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[18px]">
+                              <span className="material-symbols-outlined text-[16px]">
                                 lock
                               </span>
                             </button>
                           ) : (
                             <button
+                              type="button"
                               onClick={() => handlePromptToggleStatus(user)}
                               title="Mở khóa tài khoản"
-                              className="p-1.5 rounded-lg text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 transition-colors"
+                              aria-label="Mở khóa tài khoản"
+                              className="w-8 h-8 rounded-full bg-surface-container-low text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors inline-flex items-center justify-center cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[18px]">
+                              <span className="material-symbols-outlined text-[16px]">
                                 lock_open
                               </span>
                             </button>

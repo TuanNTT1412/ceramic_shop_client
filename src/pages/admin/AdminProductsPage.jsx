@@ -1127,22 +1127,18 @@ export const AdminProductsPage = () => {
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Card 1: Tổng tác phẩm */}
         <div className="p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-[0_2px_16px_rgba(58,48,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label">
               Tổng tác phẩm
             </span>
-            <div className="w-9 h-9 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[19px]">potted_plant</span>
-            </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-headline font-semibold text-on-surface tracking-tight">
+            <span className="text-3xl font-sans font-bold text-on-surface tracking-tight">
               {metrics.totalProducts}
             </span>
             <span className="text-xs text-secondary font-body">mã tác phẩm gốc</span>
           </div>
           <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-on-surface-variant font-medium">
-            <span className="material-symbols-outlined text-primary text-[16px]">trending_up</span>
             <span>
               Tăng <strong className="text-primary font-bold">+4 mẫu</strong> tuần này
             </span>
@@ -1151,22 +1147,18 @@ export const AdminProductsPage = () => {
 
         {/* Card 2: Đang mở bán */}
         <div className="p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-[0_2px_16px_rgba(58,48,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label">
               Đang mở bán
             </span>
-            <div className="w-9 h-9 rounded-xl bg-primary-fixed/80 border border-primary/20 flex items-center justify-center text-on-primary-fixed-variant group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[19px]">storefront</span>
-            </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-headline font-semibold text-primary tracking-tight">
+            <span className="text-3xl font-sans font-bold text-primary tracking-tight">
               {metrics.activeProducts}
             </span>
             <span className="text-xs text-secondary font-body">tác phẩm kích hoạt</span>
           </div>
           <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-secondary font-medium">
-            <span className="w-2 h-2 rounded-full bg-primary inline-block"></span>
             <span>
               <strong className="text-on-surface font-bold">{metrics.activePercent}%</strong> tỷ lệ
               hiển thị storefront
@@ -1176,38 +1168,31 @@ export const AdminProductsPage = () => {
 
         {/* Card 3: Tổng biến thể SKU */}
         <div className="p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-[0_2px_16px_rgba(58,48,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label">
               Tổng biến thể SKU
             </span>
-            <div className="w-9 h-9 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center justify-center text-secondary group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[19px]">layers</span>
-            </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-headline font-semibold text-on-surface tracking-tight">
+            <span className="text-3xl font-sans font-bold text-on-surface tracking-tight">
               {metrics.totalVariants}
             </span>
             <span className="text-xs text-secondary font-body">quy cách men / size</span>
           </div>
           <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-secondary font-medium">
-            <span className="material-symbols-outlined text-[16px] text-primary">sync_alt</span>
             <span>Khớp chuẩn Prisma Schema</span>
           </div>
         </div>
 
         {/* Card 4: Cảnh báo tồn kho */}
         <div className="p-5 rounded-2xl bg-surface-container-lowest border border-tertiary-fixed/60 shadow-[0_2px_16px_rgba(58,48,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-tertiary font-label">
               Cảnh báo tồn kho
             </span>
-            <div className="w-9 h-9 rounded-xl bg-tertiary-fixed border border-tertiary/20 flex items-center justify-center text-tertiary group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[19px]">warning</span>
-            </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-headline font-semibold text-tertiary tracking-tight">
+            <span className="text-3xl font-sans font-bold text-tertiary tracking-tight">
               {metrics.lowStockCount < 10 ? `0${metrics.lowStockCount}` : metrics.lowStockCount}
             </span>
             <span className="text-xs text-tertiary font-semibold font-body">
@@ -1215,7 +1200,6 @@ export const AdminProductsPage = () => {
             </span>
           </div>
           <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-tertiary font-medium">
-            <span className="material-symbols-outlined text-[16px]">mode_heat</span>
             <span>Cần lên lịch nung mẻ bổ sung</span>
           </div>
         </div>

@@ -464,14 +464,13 @@ export const AdminReviewsPage = () => {
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Card 1: Score & Breakdown */}
         <div className="bg-surface-container-low rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-xs font-medium uppercase tracking-wider text-secondary">
               Điểm Đánh Giá Trung Bình
             </span>
-            <span className="material-symbols-outlined text-primary text-[20px]">hotel_class</span>
           </div>
           <div className="mt-4 flex items-baseline gap-3">
-            <span className="text-4xl font-headline font-bold text-on-surface tracking-tight">
+            <span className="text-4xl font-sans font-bold text-on-surface tracking-tight">
               {metrics.avgScore}
             </span>
             <div className="flex text-amber-500">
@@ -520,41 +519,37 @@ export const AdminReviewsPage = () => {
 
         {/* Card 2: Total Reviews */}
         <div className="bg-surface-container-low rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-xs font-medium uppercase tracking-wider text-secondary">
               Tổng Lời Thẩm Định
             </span>
-            <span className="material-symbols-outlined text-secondary text-[20px]">rate_review</span>
           </div>
           <div className="mt-4">
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-headline font-bold text-on-surface">
+              <span className="text-4xl font-sans font-bold text-on-surface">
                 {metrics.totalCount}
               </span>
               <span className="text-xs text-on-surface-variant font-normal">lượt</span>
             </div>
             <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              <span className="material-symbols-outlined text-[13px]">trending_up</span>
               <span>+32 tháng này</span>
             </div>
           </div>
-          <p className="mt-4 text-[11px] text-on-surface-variant font-light flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[14px] text-emerald-700">verified</span>
-            <span>Đồng bộ 100% từ đơn giao thành công</span>
+          <p className="mt-4 text-[11px] text-on-surface-variant font-light">
+            Đồng bộ 100% từ đơn giao thành công
           </p>
         </div>
 
         {/* Card 3: Photo Reviews */}
         <div className="bg-surface-container-low rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-xs font-medium uppercase tracking-wider text-secondary">
               Đánh Giá Kèm Ảnh Thực Tế
             </span>
-            <span className="material-symbols-outlined text-primary text-[20px]">add_a_photo</span>
           </div>
           <div className="mt-4">
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-headline font-bold text-on-surface">
+              <span className="text-4xl font-sans font-bold text-on-surface">
                 {metrics.photoReviewsCount}
               </span>
               <span className="text-xs text-on-surface-variant font-normal">ảnh chụp</span>
@@ -578,7 +573,7 @@ export const AdminReviewsPage = () => {
           </div>
           <div className="mt-4">
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-headline font-bold text-primary">
+              <span className="text-4xl font-sans font-bold text-primary">
                 {metrics.pendingRepliesCount}
               </span>
               <span className="text-xs text-primary font-medium">chờ nghệ nhân</span>

@@ -57,12 +57,6 @@ export const AuthPage = ({ initialTab = 'login' }) => {
     setCurrentRole(role);
     setLoginEmail(ROLE_DATA[role].email);
     setLoginPassword(ROLE_DATA[role].password);
-    setStatusBanner({
-      type: 'info',
-      icon: 'sync_alt',
-      title: `Đã chọn vai trò: ${role}`,
-      desc: `Đã điền tài khoản [${ROLE_DATA[role].email}]. Mật khẩu: 123456`,
-    });
   };
 
   // Đổi tab Đăng nhập / Đăng ký
@@ -102,7 +96,10 @@ export const AuthPage = ({ initialTab = 'login' }) => {
       // Nếu BE chưa chạy hoặc sai tài khoản, cung cấp chế độ demo mượt mà
       console.warn('Đăng nhập server lỗi hoặc offline, kích hoạt chế độ demo:', err);
       const isNetworkOrNotFound =
-        !err.response || err.response.status === 404 || err.code === 'ERR_NETWORK';
+        !err.response ||
+        [404, 500, 502, 503, 504].includes(err.response?.status) ||
+        err.code === 'ERR_NETWORK' ||
+        err.message?.includes('502');
 
       if (isNetworkOrNotFound) {
         setStatusBanner({
@@ -156,7 +153,10 @@ export const AuthPage = ({ initialTab = 'login' }) => {
       setTimeout(() => navigate(ROUTES.HOME), 1200);
     } catch (err) {
       const isNetworkOrNotFound =
-        !err.response || err.response.status === 404 || err.code === 'ERR_NETWORK';
+        !err.response ||
+        [404, 500, 502, 503, 504].includes(err.response?.status) ||
+        err.code === 'ERR_NETWORK' ||
+        err.message?.includes('502');
 
       if (isNetworkOrNotFound) {
         setStatusBanner({
@@ -239,68 +239,7 @@ export const AuthPage = ({ initialTab = 'login' }) => {
               </div>
             </div>
 
-            {/* Khối Tri thức An Ninh & Giám sát Phiên */}
-            <div className="bg-surface-container p-6 rounded-2xl shadow-xs flex flex-col space-y-4 border border-outline-variant/30">
-              <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
-                <div className="flex items-center space-x-2 text-on-surface">
-                  <span className="material-symbols-outlined text-primary text-xl">
-                    shield_lock
-                  </span>
-                  <h3 className="font-headline text-lg font-medium">Tiêu Chuẩn Định Danh Sahara</h3>
-                </div>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-label font-medium bg-primary/10 text-primary">
-                  TLS 1.3 Certified
-                </span>
-              </div>
-
-              <div className="space-y-3 font-label text-xs text-on-surface-variant">
-                <div className="flex items-start space-x-3 p-3 bg-surface-container-low rounded-xl">
-                  <span className="material-symbols-outlined text-primary text-lg mt-0.5">key</span>
-                  <div>
-                    <strong className="text-on-surface font-semibold block">
-                      Access Token (JWT)
-                    </strong>
-                    <span>
-                      Hiệu lực chuẩn 15 phút, ký thuật toán HMAC-SHA256, lưu an toàn trong context
-                      phiên làm việc.
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-3 bg-surface-container-low rounded-xl">
-                  <span className="material-symbols-outlined text-primary text-lg mt-0.5">
-                    history_toggle_off
-                  </span>
-                  <div>
-                    <strong className="text-on-surface font-semibold block">
-                      Refresh Token (7 Ngày)
-                    </strong>
-                    <span>
-                      Cơ chế xoay vòng token tự động gia hạn an ninh, kháng tấn công XSS &amp; CSRF
-                      toàn diện.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quy chuẩn vận hành hệ thống */}
-              <div className="pt-2 text-xs font-label space-y-2">
-                <div className="flex items-center text-tertiary space-x-2">
-                  <span className="material-symbols-outlined text-base">lock_clock</span>
-                  <span>
-                    Tài khoản{' '}
-                    <code className="bg-surface-container-high px-1 py-0.5 rounded text-[11px]">
-                      isActive = false
-                    </code>{' '}
-                    lập tức bị phong tỏa quyền truy cập.
-                  </span>
-                </div>
-                <div className="flex items-center text-secondary space-x-2">
-                  <span className="material-symbols-outlined text-base">shopping_bag</span>
-                  <span>Đăng ký mới tự động kích hoạt giỏ hàng nghệ nhân rỗng kèm mã bảo mật.</span>
-                </div>
-              </div>
-            </div>
+            {/* Khối Tri thức An Ninh & Giám sát Phiên - đã ẩn */}
           </div>
 
           {/* ======================================================= */}
@@ -310,10 +249,7 @@ export const AuthPage = ({ initialTab = 'login' }) => {
             <div className="bg-surface-container-lowest p-6 sm:p-10 md:p-12 rounded-3xl shadow-sm border border-outline-variant/30">
               {/* Đầu đề Biểu Mẫu */}
               <div className="text-center sm:text-left mb-8">
-                <div className="inline-flex items-center space-x-2 px-3 py-1 bg-surface-container text-primary rounded-full text-xs font-label font-medium mb-3">
-                  <span className="material-symbols-outlined text-sm">verified_user</span>
-                  <span>Cổng Xác Thực An Toàn v1.8</span>
-                </div>
+
                 <h1 className="font-headline text-3xl sm:text-4xl text-on-surface tracking-tight font-medium">
                   Không Gian Nghệ Thuật Đất Nung
                 </h1>
@@ -324,16 +260,7 @@ export const AuthPage = ({ initialTab = 'login' }) => {
 
               {/* Role Simulator: Bộ Chuyển Đổi Mô Phỏng Vai Trò */}
               <div className="mb-8">
-                <div className="flex items-center justify-between mb-2.5">
-                  <label className="font-label text-xs uppercase tracking-wider text-secondary font-semibold">
-                    Mô phỏng vai trò (Role Simulator)
-                  </label>
-                  <span className="font-label text-xs text-primary font-medium">
-                    {ROLE_DATA[currentRole].desc}
-                  </span>
-                </div>
                 <div className="grid grid-cols-3 gap-2.5 p-1.5 bg-surface-container rounded-2xl">
-                  {/* Nút Khách Hàng */}
                   <button
                     type="button"
                     onClick={() => handleSelectRole('CUSTOMER')}
@@ -343,15 +270,7 @@ export const AuthPage = ({ initialTab = 'login' }) => {
                         : 'text-on-surface-variant hover:text-on-surface'
                     }`}
                   >
-                    <span
-                      className={`material-symbols-outlined text-xl mb-1 ${
-                        currentRole === 'CUSTOMER' ? 'text-primary' : 'text-secondary'
-                      }`}
-                    >
-                      person
-                    </span>
                     <span className="font-label text-xs font-semibold">Khách Hàng</span>
-                    <span className="text-[10px] text-secondary font-light">CUSTOMER</span>
                   </button>
 
                   {/* Nút Nghệ Nhân / Nhân Viên */}
@@ -364,15 +283,7 @@ export const AuthPage = ({ initialTab = 'login' }) => {
                         : 'text-on-surface-variant hover:text-on-surface'
                     }`}
                   >
-                    <span
-                      className={`material-symbols-outlined text-xl mb-1 ${
-                        currentRole === 'STAFF' ? 'text-primary' : 'text-secondary'
-                      }`}
-                    >
-                      badge
-                    </span>
                     <span className="font-label text-xs font-semibold">Nghệ Nhân</span>
-                    <span className="text-[10px] text-secondary font-light">STAFF</span>
                   </button>
 
                   {/* Nút Quản Trị */}
@@ -385,15 +296,7 @@ export const AuthPage = ({ initialTab = 'login' }) => {
                         : 'text-on-surface-variant hover:text-on-surface'
                     }`}
                   >
-                    <span
-                      className={`material-symbols-outlined text-xl mb-1 ${
-                        currentRole === 'ADMIN' ? 'text-primary' : 'text-secondary'
-                      }`}
-                    >
-                      admin_panel_settings
-                    </span>
                     <span className="font-label text-xs font-semibold">Quản Trị</span>
-                    <span className="text-[10px] text-secondary font-light">ADMIN</span>
                   </button>
                 </div>
               </div>
@@ -410,9 +313,6 @@ export const AuthPage = ({ initialTab = 'login' }) => {
                   }`}
                 >
                   Đăng Nhập
-                  <span className="block text-[10px] font-normal text-secondary uppercase tracking-tight">
-                    POST /api/v1/auth/login
-                  </span>
                 </button>
                 <button
                   type="button"
@@ -424,9 +324,6 @@ export const AuthPage = ({ initialTab = 'login' }) => {
                   }`}
                 >
                   Đăng Ký Thành Viên
-                  <span className="block text-[10px] font-normal text-secondary uppercase tracking-tight">
-                    POST /api/v1/auth/register
-                  </span>
                 </button>
               </div>
 
@@ -505,10 +402,6 @@ export const AuthPage = ({ initialTab = 'login' }) => {
                         Ghi nhớ đăng nhập an toàn
                       </span>
                     </label>
-                    <div className="flex items-center space-x-1.5 text-xs font-label text-secondary">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                      <span>Cổng API: Hoạt động</span>
-                    </div>
                   </div>
 
                   {/* Nút bấm Đăng Nhập CTA */}
@@ -646,11 +539,7 @@ export const AuthPage = ({ initialTab = 'login' }) => {
               )}
 
               {/* Footer của Hộp Đăng Nhập */}
-              <div className="mt-8 pt-6 border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between text-xs font-label text-secondary gap-4">
-                <div className="flex items-center space-x-2">
-                  <span className="material-symbols-outlined text-sm text-primary">verified</span>
-                  <span>Mã hóa đầu cuối 256-bit</span>
-                </div>
+              <div className="mt-8 pt-6 border-t border-outline-variant/30 flex items-center justify-end text-xs font-label text-secondary gap-4">
                 <div className="flex items-center space-x-4">
                   <button
                     type="button"
