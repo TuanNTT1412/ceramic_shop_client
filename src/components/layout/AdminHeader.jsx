@@ -100,18 +100,13 @@ export const AdminHeader = ({
         {/* Nút Xem Cửa Hàng (Storefront Link) */}
         <Link
           to={ROUTES.HOME}
-          target="_blank"
-          rel="noopener noreferrer"
           className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-label font-medium border border-outline-variant/30 hover:border-primary/30 transition-all group"
-          title="Mở trang bán hàng khách xem trong tab mới"
+          title="Xem trang bán hàng"
         >
           <span className="material-symbols-outlined text-[16px] text-primary group-hover:scale-110 transition-transform">
             storefront
           </span>
           <span>Xem Cửa Hàng</span>
-          <span className="material-symbols-outlined text-[14px] text-secondary opacity-70">
-            open_in_new
-          </span>
         </Link>
 
         {/* Chuông Thông Báo */}

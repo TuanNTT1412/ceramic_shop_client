@@ -118,8 +118,6 @@ export const AdminDropdown = () => {
             {/* Mục 2: Xem cửa hàng bán lẻ */}
             <Link
               to={ROUTES.HOME}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-3 py-2 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
             >
@@ -135,11 +133,8 @@ export const AdminDropdown = () => {
               </div>
               <div className="flex-1">
                 <div className="font-semibold leading-tight">Xem Cửa Hàng Bán Lẻ</div>
-                <div className="text-[10px] text-[#8a705b] mt-0.5">Mở trang khách hàng trong tab mới</div>
+                <div className="text-[10px] text-[#8a705b] mt-0.5">Chuyển sang giao diện mua sắm</div>
               </div>
-              <span className="material-symbols-outlined text-[15px] text-[#8a705b] group-hover:text-[#c2652a]">
-                open_in_new
-              </span>
             </Link>
 
             {/* Mục 3: Đăng xuất */}

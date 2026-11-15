@@ -17,6 +17,13 @@ export const AuthProvider = ({ children }) => {
       const savedUser = storage.get(STORAGE_KEYS.USER_INFO, null);
 
       if (savedToken && savedUser) {
+        // Nếu là phiên xem trước giả lập (mock token), duy trì phiên không gọi API thật tránh 401
+        if (savedToken.startsWith('mock_')) {
+          setUser(savedUser);
+          setIsLoading(false);
+          return;
+        }
+
         try {
           // Lấy profile mới nhất từ BE để đảm bảo quyền hạn & trạng thái tài khoản
           const res = await userApi.getProfile();
@@ -27,7 +34,7 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (err) {
           console.warn('Phiên đăng nhập không thể làm mới:', err?.message);
-          // Nếu token không hợp lệ (401), client.js đã tự dọn localStorage
+          // Nếu token không hợp lệ (401), dọn phiên
           if (err.response?.status === 401) {
             setUser(null);
             setToken(null);

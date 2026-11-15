@@ -381,6 +381,419 @@ const ImagePickerField = ({
   );
 };
 
+/**
+ * Dữ liệu media mẫu chuẩn từ Cloudinary Studio của xưởng gốm (Bộ tác phẩm B1)
+ */
+const SAMPLE_STUDIO_MEDIA = {
+  angles: {
+    front: 'https://res.cloudinary.com/velll47x/image/upload/v1792941507/ceramic_shop/products/B1/4_angles/front.jpg',
+    left: 'https://res.cloudinary.com/velll47x/image/upload/v1792941509/ceramic_shop/products/B1/4_angles/left.jpg',
+    back: 'https://res.cloudinary.com/velll47x/image/upload/v1792941512/ceramic_shop/products/B1/4_angles/back.jpg',
+    right: 'https://res.cloudinary.com/velll47x/image/upload/v1792941516/ceramic_shop/products/B1/4_angles/right.jpg',
+  },
+  details: [
+    { id: 'dt-1', url: 'https://res.cloudinary.com/velll47x/image/upload/v1792941519/ceramic_shop/products/B1/details/detail_1.jpg', caption: 'Vân men nứt hỏa biến' },
+    { id: 'dt-2', url: 'https://res.cloudinary.com/velll47x/image/upload/v1792941522/ceramic_shop/products/B1/details/detail_2.jpg', caption: 'Họa tiết khắc chìm thủ công' },
+    { id: 'dt-3', url: 'https://res.cloudinary.com/velll47x/image/upload/v1792941526/ceramic_shop/products/B1/details/detail_3.jpg', caption: 'Dấu triện nung đáy thô mộc' },
+  ],
+  video: 'https://res.cloudinary.com/velll47x/video/upload/v1792941567/ceramic_shop/products/B1/videos/video_1.mov',
+};
+
+/**
+ * Component Quản lý Media Biến Thể: Bộ 4 góc xoay chuẩn + Ảnh chụp chi tiết + Video thực tế
+ */
+const ProductMediaUploader = ({ media, onChange }) => {
+  const [activeTab, setActiveTab] = useState('angles'); // 'angles' | 'details' | 'video'
+
+  // Số lượng góc ảnh đã nạp
+  const anglesCount = ['front', 'left', 'back', 'right'].filter(
+    (k) => Boolean(media?.angles?.[k])
+  ).length;
+
+  // Xử lý nạp ảnh góc xoay từ máy tính
+  const handleAngleFileInput = async (slot, file) => {
+    if (!file) return;
+    try {
+      const compressed = await compressImageToWebSafe(file);
+      onChange({
+        ...media,
+        angles: {
+          ...(media?.angles || {}),
+          [slot]: compressed,
+        },
+      });
+    } catch (err) {
+      console.warn('Lỗi đọc ảnh góc:', err);
+    }
+  };
+
+  // Xóa ảnh góc xoay
+  const handleRemoveAngle = (slot) => {
+    onChange({
+      ...media,
+      angles: {
+        ...(media?.angles || {}),
+        [slot]: '',
+      },
+    });
+  };
+
+  // Thêm ảnh chi tiết từ máy tính
+  const handleDetailFileInput = async (file) => {
+    if (!file) return;
+    try {
+      const compressed = await compressImageToWebSafe(file);
+      const newDetail = {
+        id: `dt-${Date.now()}`,
+        url: compressed,
+        caption: `Chi tiết ${(media?.details?.length || 0) + 1}`,
+      };
+      onChange({
+        ...media,
+        details: [...(media?.details || []), newDetail],
+      });
+    } catch (err) {
+      console.warn('Lỗi đọc ảnh chi tiết:', err);
+    }
+  };
+
+  // Xóa ảnh chi tiết
+  const handleRemoveDetail = (id) => {
+    onChange({
+      ...media,
+      details: (media?.details || []).filter((item) => item.id !== id),
+    });
+  };
+
+  // Nạp video từ máy tính
+  const handleVideoFileInput = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      alert('Vui lòng chọn tệp video hợp lệ (MP4, MOV, WebM)');
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    onChange({
+      ...media,
+      video: previewUrl,
+    });
+  };
+
+  // Xóa video
+  const handleRemoveVideo = () => {
+    onChange({
+      ...media,
+      video: '',
+    });
+  };
+
+  const angleConfig = [
+    { key: 'front', label: 'Mặt trước', isPrimary: true },
+    { key: 'left', label: 'Mặt trái', isPrimary: false },
+    { key: 'back', label: 'Mặt sau', isPrimary: false },
+    { key: 'right', label: 'Mặt phải', isPrimary: false },
+  ];
+
+  return (
+    <div className="space-y-3.5 pt-1">
+      {/* Header khu vực media */}
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="block text-xs font-semibold text-on-surface font-body">
+            Bộ ảnh & video biến thể
+          </span>
+          <p className="text-[11px] text-secondary font-body">
+            Gồm 4 góc xoay chuẩn, ảnh chi tiết men nung và video thực tế
+          </p>
+        </div>
+      </div>
+
+      {/* 3 Tab điều hướng tiếng Việt chuẩn */}
+      <div className="grid grid-cols-3 p-1 bg-surface-container rounded-xl gap-1 text-xs font-medium font-body select-none">
+        <button
+          type="button"
+          onClick={() => setActiveTab('angles')}
+          className={`py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            activeTab === 'angles'
+              ? 'bg-surface-container-lowest text-primary font-semibold shadow-xs'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          <span>Bộ 4 góc ảnh</span>
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+              activeTab === 'angles'
+                ? 'bg-primary/10 text-primary'
+                : 'bg-surface-container-highest text-secondary'
+            }`}
+          >
+            {anglesCount}/4
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('details')}
+          className={`py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            activeTab === 'details'
+              ? 'bg-surface-container-lowest text-primary font-semibold shadow-xs'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          <span>Ảnh chi tiết</span>
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+              activeTab === 'details'
+                ? 'bg-primary/10 text-primary'
+                : 'bg-surface-container-highest text-secondary'
+            }`}
+          >
+            {media?.details?.length || 0}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('video')}
+          className={`py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            activeTab === 'video'
+              ? 'bg-surface-container-lowest text-primary font-semibold shadow-xs'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          <span>Video thực tế</span>
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+              activeTab === 'video'
+                ? 'bg-primary/10 text-primary'
+                : 'bg-surface-container-highest text-secondary'
+            }`}
+          >
+            {media?.video ? '1' : '0'}
+          </span>
+        </button>
+      </div>
+
+      {/* TAB 1: BỘ 4 GÓC ẢNH XOAY CHUẨN */}
+      {activeTab === 'angles' && (
+        <div className="space-y-2.5">
+          <div className="grid grid-cols-2 gap-3">
+            {angleConfig.map((slot) => {
+              const currentUrl = media?.angles?.[slot.key];
+              const fileInputId = `angle-file-${slot.key}`;
+
+              return (
+                <div
+                  key={slot.key}
+                  className="p-2.5 rounded-xl border border-outline-variant/40 bg-surface-container-low/60 flex flex-col justify-between gap-2 transition-all hover:border-outline-variant"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-on-surface font-body">
+                      {slot.label}
+                    </span>
+                    {slot.isPrimary && (
+                      <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        Ảnh chính
+                      </span>
+                    )}
+                  </div>
+
+                  <input
+                    id={fileInputId}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      handleAngleFileInput(slot.key, file);
+                      e.target.value = '';
+                    }}
+                    className="hidden"
+                  />
+
+                  {currentUrl ? (
+                    <div className="space-y-2">
+                      <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/30 group shadow-xs">
+                        <img
+                          src={currentUrl}
+                          alt={slot.label}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <label
+                          htmlFor={fileInputId}
+                          className="flex-1 text-center py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface hover:text-primary cursor-pointer transition-colors"
+                        >
+                          Đổi ảnh
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAngle(slot.key)}
+                          className="text-xs font-medium text-error hover:bg-error/10 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="aspect-square w-full rounded-lg border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-lowest/60 flex flex-col items-center justify-center gap-1.5 p-2 transition-colors">
+                      <span className="text-xs text-secondary font-body text-center">
+                        Chưa có ảnh {slot.label.toLowerCase()}
+                      </span>
+                      <label
+                        htmlFor={fileInputId}
+                        className="px-3 py-1 rounded-lg bg-primary text-on-primary text-xs font-medium hover:bg-primary-container cursor-pointer transition-colors shadow-2xs mt-1"
+                      >
+                        Đổi ảnh
+                      </label>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: ẢNH CHỤP CHI TIẾT */}
+      {activeTab === 'details' && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-secondary font-body">
+            <span>Cận cảnh nước men, hoa văn thủ công và triện đáy</span>
+            <label
+              htmlFor="add-detail-input"
+              className="text-primary font-medium hover:underline cursor-pointer"
+            >
+              Thêm ảnh
+            </label>
+          </div>
+
+          <input
+            id="add-detail-input"
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              handleDetailFileInput(file);
+              e.target.value = '';
+            }}
+            className="hidden"
+          />
+
+          <div className="grid grid-cols-3 gap-2.5">
+            {(media?.details || []).map((detail, idx) => (
+              <div
+                key={detail.id || idx}
+                className="group relative aspect-square rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/40 shadow-xs flex flex-col justify-end"
+              >
+                <img
+                  src={detail.url}
+                  alt={detail.caption || `Chi tiết ${idx + 1}`}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveDetail(detail.id)}
+                  className="absolute top-1.5 right-1.5 text-xs text-white bg-black/60 hover:bg-error px-1.5 py-0.5 rounded-md transition-colors cursor-pointer"
+                  title="Xóa ảnh chi tiết"
+                >
+                  Xóa
+                </button>
+                <span className="relative z-10 px-2 py-1 text-[10px] font-semibold text-white truncate font-body">
+                  {detail.caption || `Chi tiết ${idx + 1}`}
+                </span>
+              </div>
+            ))}
+
+            {/* Ô thêm ảnh chi tiết mới */}
+            <div className="aspect-square rounded-xl border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-low/40 flex flex-col items-center justify-center p-2 transition-colors">
+              <label
+                htmlFor="add-detail-input"
+                className="text-xs font-medium text-primary hover:underline cursor-pointer text-center"
+              >
+                Thêm ảnh
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: VIDEO THỰC TẾ SẢN PHẨM */}
+      {activeTab === 'video' && (
+        <div className="space-y-3">
+          <input
+            id="video-file-input"
+            type="file"
+            accept="video/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              handleVideoFileInput(file);
+              e.target.value = '';
+            }}
+            className="hidden"
+          />
+
+          {media?.video ? (
+            <div className="space-y-2.5">
+              <div className="rounded-xl overflow-hidden bg-black/90 border border-outline-variant/30 shadow-sm aspect-video flex items-center justify-center">
+                <video
+                  key={media.video}
+                  src={media.video}
+                  controls
+                  playsInline
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              <div className="p-3 bg-surface-container-low rounded-xl border border-outline-variant/40 flex items-center justify-between">
+                <div>
+                  <span className="block text-xs font-semibold text-on-surface font-body">
+                    Thước phim thực tế tại xưởng
+                  </span>
+                  <p className="text-[11px] text-secondary font-body">
+                    Độ phân giải cao, hiển thị góc xoay sinh động
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="video-file-input"
+                    className="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface cursor-pointer transition-colors"
+                  >
+                    Đổi video
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleRemoveVideo}
+                    className="px-2 py-1.5 rounded-lg text-xs font-medium text-error hover:bg-error/10 transition-colors cursor-pointer"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-low/40 p-6 flex flex-col items-center justify-center gap-2 text-center transition-colors">
+              <span className="text-xs font-medium text-on-surface font-body">
+                Chưa có video cho biến thể này
+              </span>
+              <p className="text-[11px] text-secondary font-body max-w-xs">
+                Tải lên video định dạng MP4, MOV, WebM từ máy tính
+              </p>
+              <label
+                htmlFor="video-file-input"
+                className="px-4 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-medium hover:bg-primary-container cursor-pointer transition-colors shadow-xs mt-1"
+              >
+                Đổi video
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const AdminProductsPage = () => {
   const toast = useToast();
 
@@ -407,6 +820,7 @@ export const AdminProductsPage = () => {
   const [productFormCategory, setProductFormCategory] = useState('');
   const [productFormDesc, setProductFormDesc] = useState('');
   const [productFormActive, setProductFormActive] = useState(true);
+  const [productFormIsReturnable, setProductFormIsReturnable] = useState(true);
   const [productFormGlaze, setProductFormGlaze] = useState('Men tro củi tự nhiên');
   const [productFormInitialPrice, setProductFormInitialPrice] = useState(1500000);
   const [productFormInitialStock, setProductFormInitialStock] = useState(10);
@@ -425,6 +839,11 @@ export const AdminProductsPage = () => {
   const [variantSpecInput, setVariantSpecInput] = useState('Dung tích 220ml');
   const [variantImageInput, setVariantImageInput] = useState('/images/hero-vase.jpg');
   const [variantIsPrimary, setVariantIsPrimary] = useState(false);
+  const [variantMedia, setVariantMedia] = useState({
+    angles: { front: '', left: '', back: '', right: '' },
+    details: [],
+    video: '',
+  });
 
   // ==========================================
   // MODAL 3: BỘ SƯU TẬP ẢNH BIẾN THỂ (Variant Images Manager)
@@ -487,6 +906,7 @@ export const AdminProductsPage = () => {
             categoryName: p.category?.name || 'Tác phẩm gốm mộc',
             description: p.description || 'Cốt đất sét thô nung nhiệt cao 1300°C.',
             isActive: p.isActive !== false,
+            isReturnable: p.isReturnable ?? true,
             glazeType: p.category?.name || 'Men tro tự nhiên',
             primaryImage: variants[0]?.imageUrl || '/images/hero-vase.jpg',
             variants,
@@ -597,6 +1017,7 @@ export const AdminProductsPage = () => {
     setProductFormCategory(categories[0]?.id || 'cat-am-chen');
     setProductFormDesc('');
     setProductFormActive(true);
+    setProductFormIsReturnable(true);
     setProductFormGlaze('Men tro củi tự nhiên');
     setProductFormInitialPrice(1850000);
     setProductFormInitialStock(12);
@@ -610,6 +1031,7 @@ export const AdminProductsPage = () => {
     setProductFormCategory(product.categoryId);
     setProductFormDesc(product.description || '');
     setProductFormActive(product.isActive);
+    setProductFormIsReturnable(product.isReturnable !== false);
     setProductFormGlaze(product.glazeType || 'Men tro củi tự nhiên');
     setIsProductModalOpen(true);
   };
@@ -629,6 +1051,7 @@ export const AdminProductsPage = () => {
           categoryId: productFormCategory,
           description: productFormDesc.trim(),
           isActive: productFormActive,
+          isReturnable: productFormIsReturnable,
         });
       } catch (err) {
         // Optimistic
@@ -645,6 +1068,7 @@ export const AdminProductsPage = () => {
                   categories.find((c) => c.id === productFormCategory)?.name || p.categoryName,
                 description: productFormDesc.trim(),
                 isActive: productFormActive,
+                isReturnable: productFormIsReturnable,
                 glazeType: productFormGlaze,
               }
             : p
@@ -665,6 +1089,7 @@ export const AdminProductsPage = () => {
         categoryName: selectedCat?.name || 'Tác phẩm gốm mộc',
         description: productFormDesc.trim(),
         isActive: productFormActive,
+        isReturnable: productFormIsReturnable,
         glazeType: productFormGlaze,
         primaryImage: productFormImage,
         variants: [
@@ -686,6 +1111,7 @@ export const AdminProductsPage = () => {
           name: productFormName.trim(),
           categoryId: productFormCategory,
           description: productFormDesc.trim(),
+          isReturnable: productFormIsReturnable,
           initialVariant: {
             variantName: 'Bản Tiêu Chuẩn Nung Củi',
             price: Number(productFormInitialPrice) || 1200000,
@@ -720,8 +1146,18 @@ export const AdminProductsPage = () => {
     setVariantPriceInput(1850000);
     setVariantStockInput(10);
     setVariantSpecInput('Quy cách thủ công tiêu chuẩn');
-    setVariantImageInput(product.primaryImage || '/images/hero-vase.jpg');
+    setVariantImageInput(product.primaryImage || SAMPLE_STUDIO_MEDIA.angles.front);
     setVariantIsPrimary(false);
+    setVariantMedia({
+      angles: {
+        front: product.primaryImage || SAMPLE_STUDIO_MEDIA.angles.front,
+        left: SAMPLE_STUDIO_MEDIA.angles.left,
+        back: SAMPLE_STUDIO_MEDIA.angles.back,
+        right: SAMPLE_STUDIO_MEDIA.angles.right,
+      },
+      details: [...SAMPLE_STUDIO_MEDIA.details],
+      video: SAMPLE_STUDIO_MEDIA.video,
+    });
     setIsVariantDrawerOpen(true);
   };
 
@@ -735,6 +1171,33 @@ export const AdminProductsPage = () => {
     setVariantSpecInput(variant.spec || 'Dung tích chuẩn');
     setVariantImageInput(variant.imageUrl || product.primaryImage);
     setVariantIsPrimary(variant.isPrimary || false);
+
+    // Nạp đầy đủ 4 góc ảnh, chi tiết và video (ưu tiên ảnh của variant, fallback studio Cloudinary)
+    const baseAngles = {
+      front: variant.imageUrl || SAMPLE_STUDIO_MEDIA.angles.front,
+      left: variant.images?.[1]?.imageUrl || SAMPLE_STUDIO_MEDIA.angles.left,
+      back: variant.images?.[2]?.imageUrl || SAMPLE_STUDIO_MEDIA.angles.back,
+      right: variant.images?.[3]?.imageUrl || SAMPLE_STUDIO_MEDIA.angles.right,
+    };
+    const baseDetails =
+      variant.images && variant.images.length > 4
+        ? variant.images.slice(4).map((img, idx) => ({
+            id: img.id || `dt-${idx}`,
+            url: img.imageUrl,
+            caption: `Chi tiết ${idx + 1}`,
+          }))
+        : [...SAMPLE_STUDIO_MEDIA.details];
+    const baseVideo = variant.video || SAMPLE_STUDIO_MEDIA.video;
+
+    setVariantMedia(
+      variant.media
+        ? { ...variant.media }
+        : {
+            angles: baseAngles,
+            details: baseDetails,
+            video: baseVideo,
+          }
+    );
     setIsVariantDrawerOpen(true);
   };
 
@@ -749,6 +1212,7 @@ export const AdminProductsPage = () => {
 
     const priceNum = Math.max(0, Number(variantPriceInput) || 0);
     const stockNum = Math.max(0, Number(variantStockInput) || 0);
+    const effectiveImageUrl = variantMedia?.angles?.front || variantImageInput || parentProductForVariant.primaryImage;
 
     if (editingVariant) {
       // Chỉnh sửa biến thể
@@ -774,7 +1238,8 @@ export const AdminProductsPage = () => {
                 stockQuantity: stockNum,
                 spec: variantSpecInput.trim(),
                 isPrimary: variantIsPrimary,
-                imageUrl: variantImageInput || v.imageUrl,
+                imageUrl: effectiveImageUrl,
+                media: variantMedia,
               };
             }
             return variantIsPrimary ? { ...v, isPrimary: false } : v;
@@ -794,7 +1259,8 @@ export const AdminProductsPage = () => {
         stockQuantity: stockNum,
         spec: variantSpecInput.trim(),
         isPrimary: variantIsPrimary,
-        imageUrl: variantImageInput || parentProductForVariant.primaryImage,
+        imageUrl: effectiveImageUrl,
+        media: variantMedia,
       };
 
       try {
@@ -803,7 +1269,7 @@ export const AdminProductsPage = () => {
           price: priceNum,
           stockQuantity: stockNum,
           initialImage: {
-            imageUrl: variantImageInput || parentProductForVariant.primaryImage,
+            imageUrl: effectiveImageUrl,
             isPrimary: variantIsPrimary,
             displayOrder: 0,
           },
@@ -1251,31 +1717,27 @@ export const AdminProductsPage = () => {
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-surface-container-highest text-on-surface-variant font-mono tracking-wider">
                           {product.code}
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-primary-fixed text-on-primary-fixed-variant">
+                        <span className="px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-primary-fixed text-on-primary-fixed-variant font-body">
                           {product.categoryName}
                         </span>
+                        {product.isReturnable ? (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-secondary-container text-on-secondary-container font-body">
+                            Hỗ trợ Đổi Trả
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-surface-container-highest text-secondary font-body">
+                            Không Đổi Trả
+                          </span>
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-4 mt-2 text-xs text-secondary flex-wrap">
-                        <span className="flex items-center gap-1 font-semibold text-on-surface">
-                          <span className="material-symbols-outlined text-[16px] text-primary">
-                            sell
-                          </span>
-                          {minPrice === maxPrice
-                            ? formatCurrency(minPrice)
-                            : `${formatCurrency(minPrice)} – ${formatCurrency(maxPrice)}`}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px] text-secondary">
-                            inventory_2
-                          </span>
+                      <div className="flex items-center gap-2 mt-2 text-xs text-secondary flex-wrap font-body">
+                        <span>
                           Tổng tồn: <strong className="text-on-surface font-semibold">{totalStock} cái</strong>
                         </span>
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px] text-primary">
-                            account_tree
-                          </span>
-                          {product.variants?.length || 0} biến thể SKU
+                        <span>•</span>
+                        <span>
+                          <strong className="text-on-surface font-semibold">{product.variants?.length || 0}</strong> biến thể SKU
                         </span>
                       </div>
                     </div>
@@ -1355,27 +1817,23 @@ export const AdminProductsPage = () => {
                           />
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-on-surface">
+                              <span className="text-sm font-semibold text-on-surface font-body">
                                 {variant.variantName}
                               </span>
-                              {variant.isPrimary ? (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-on-primary uppercase tracking-wide">
-                                  Primary
-                                </span>
-                              ) : variant.stockQuantity <= 0 ? (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-error-container text-on-error-container uppercase tracking-wide">
+                              {variant.stockQuantity <= 0 ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-error-container text-on-error-container font-body">
                                   Hết hàng
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container-highest text-secondary">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container-highest text-secondary font-body">
                                   Cốt đất mộc
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2.5 text-xs text-secondary mt-0.5 font-mono">
+                            <div className="flex items-center gap-2.5 text-xs text-secondary mt-0.5 font-body">
                               <span>SKU: {variant.sku}</span>
                               <span>•</span>
-                              <span className="font-body text-on-surface-variant font-medium">
+                              <span className="text-on-surface-variant font-medium">
                                 {variant.spec}
                               </span>
                             </div>
@@ -1388,7 +1846,7 @@ export const AdminProductsPage = () => {
                               {formatCurrency(variant.price)}
                             </div>
                             <div
-                              className={`text-xs font-medium ${
+                              className={`text-xs font-medium font-body ${
                                 variant.stockQuantity <= 0
                                   ? 'text-error font-bold'
                                   : 'text-secondary'
@@ -1406,21 +1864,10 @@ export const AdminProductsPage = () => {
 
                           <button
                             type="button"
-                            onClick={() => openVariantImagesModal(product, variant)}
-                            className="px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/50 text-xs font-semibold font-label text-on-surface hover:text-primary hover:border-primary shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
-                            title="Quản lý bộ ảnh của biến thể này (createVariantImage & updateVariantImage)"
-                          >
-                            <span className="material-symbols-outlined text-[15px] text-primary">photo_library</span>
-                            <span>Album ảnh ({variant.images?.length || 1})</span>
-                          </button>
-
-                          <button
-                            type="button"
                             onClick={() => openEditVariantDrawer(product, variant)}
-                            className="px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/50 text-xs font-semibold font-label text-primary hover:bg-primary hover:text-on-primary hover:border-primary shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/50 text-xs font-semibold font-body text-primary hover:bg-primary hover:text-on-primary hover:border-primary shadow-xs transition-all cursor-pointer"
                           >
-                            <span className="material-symbols-outlined text-[15px]">edit_note</span>
-                            <span>Sửa nhanh</span>
+                            Sửa
                           </button>
                         </div>
                       </div>
@@ -1614,6 +2061,27 @@ export const AdminProductsPage = () => {
                 </label>
               </div>
 
+              {/* Chính sách đổi trả hàng */}
+              <div className="p-3.5 rounded-xl bg-surface-container-low/50 border border-outline-variant/40 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-on-surface font-label">
+                    Hỗ trợ Đổi Trả Tác Phẩm
+                  </span>
+                  <p className="text-[11px] text-secondary font-body">
+                    Cho phép khách hàng yêu cầu đổi trả hoặc thẩm định lại mẻ gốm
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={productFormIsReturnable}
+                    onChange={(e) => setProductFormIsReturnable(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                </label>
+              </div>
+
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-outline-variant/30">
                 <button
@@ -1621,13 +2089,13 @@ export const AdminProductsPage = () => {
                   onClick={() => setIsProductModalOpen(false)}
                   className="px-4 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container text-xs font-semibold font-label cursor-pointer"
                 >
-                  Hủy thao tác
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary-container text-xs font-semibold font-label shadow-sm hover:shadow-md transition-all cursor-pointer"
                 >
-                  {editingProduct ? 'Lưu Thay Đổi' : 'Xác Nhận Khai Hỏa'}
+                  {editingProduct ? 'Lưu' : 'Tạo mới'}
                 </button>
               </div>
             </form>
@@ -1646,25 +2114,20 @@ export const AdminProductsPage = () => {
             onClick={() => setIsVariantDrawerOpen(false)}
           />
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <aside className="w-screen max-w-md bg-surface-container-lowest shadow-2xl flex flex-col justify-between overflow-y-auto border-l border-outline-variant/40 p-6">
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
+            <aside className="w-screen max-w-lg sm:max-w-xl bg-surface-container-lowest shadow-2xl flex flex-col justify-between overflow-y-auto border-l border-outline-variant/40 p-6">
               <div>
                 {/* Header Drawer */}
                 <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center text-primary font-headline text-base font-bold shadow-sm">
-                      G
-                    </div>
-                    <div>
-                      <h3 className="text-base font-headline font-semibold text-on-surface leading-snug">
-                        {editingVariant ? 'Chỉnh Sửa Biến Thể' : 'Thêm Biến Thể Mới'}
-                      </h3>
-                      <p className="text-[11px] text-secondary font-body">
-                        Tác phẩm: {parentProductForVariant.name}
-                      </p>
-                    </div>
+                  <div>
+                    <h3 className="text-base font-headline font-semibold text-on-surface leading-snug">
+                      {editingVariant ? 'Chỉnh Sửa Biến Thể' : 'Thêm Biến Thể Mới'}
+                    </h3>
+                    <p className="text-[11px] text-secondary font-body">
+                      Tác phẩm: {parentProductForVariant.name}
+                    </p>
                   </div>
-                  <span className="text-[11px] font-mono uppercase text-on-surface-variant bg-surface-container-low border border-outline-variant/40 px-2.5 py-1 rounded-md font-semibold">
+                  <span className="text-[11px] font-body text-on-surface-variant bg-surface-container-low border border-outline-variant/40 px-2.5 py-1 rounded-md font-semibold">
                     {variantSkuInput}
                   </span>
                 </div>
@@ -1673,7 +2136,7 @@ export const AdminProductsPage = () => {
                 <form onSubmit={handleSaveVariant} id="variantDrawerForm" className="space-y-4 pt-5">
                   {/* Tên biến thể */}
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1.5 font-label">
+                    <label className="block text-xs font-medium text-on-surface mb-1.5 font-body">
                       Tên biến thể quy cách *
                     </label>
                     <input
@@ -1689,7 +2152,7 @@ export const AdminProductsPage = () => {
                   {/* Giá & Tồn kho Grid */}
                   <div className="grid grid-cols-2 gap-3.5">
                     <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1.5 font-label">
+                      <label className="block text-xs font-medium text-on-surface mb-1.5 font-body">
                         Đơn giá bán (VNĐ) *
                       </label>
                       <input
@@ -1698,11 +2161,11 @@ export const AdminProductsPage = () => {
                         min={0}
                         value={variantPriceInput}
                         onChange={(e) => setVariantPriceInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-mono font-semibold transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-body font-semibold transition-colors"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1.5 font-label">
+                      <label className="block text-xs font-medium text-on-surface mb-1.5 font-body">
                         Tồn kho thực tế
                       </label>
                       <input
@@ -1710,14 +2173,14 @@ export const AdminProductsPage = () => {
                         min={0}
                         value={variantStockInput}
                         onChange={(e) => setVariantStockInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-mono font-semibold transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-body font-semibold transition-colors"
                       />
                     </div>
                   </div>
 
                   {/* Quy cách phụ */}
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1.5 font-label">
+                    <label className="block text-xs font-medium text-on-surface mb-1.5 font-body">
                       Quy cách / Dung tích
                     </label>
                     <input
@@ -1725,54 +2188,20 @@ export const AdminProductsPage = () => {
                       value={variantSpecInput}
                       onChange={(e) => setVariantSpecInput(e.target.value)}
                       placeholder="Ví dụ: Dung tích 220ml • Men tro nung củi"
-                      className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary transition-colors"
+                      className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary transition-colors font-body"
                     />
                   </div>
 
-                  {/* Ảnh đại diện biến thể */}
-                  <ImagePickerField
-                    id="variant-image-picker"
-                    label="Ảnh đại diện biến thể (Chọn từ thiết bị / thư mục)"
-                    value={variantImageInput}
-                    onChange={setVariantImageInput}
-                    helpText="Chọn ảnh quy cách biến thể từ máy tính của bạn."
+                  {/* Bộ Media Quy Cách Biến Thể: 4 Góc Xoay Chuẩn + Ảnh Chi Tiết + Video Thực Tế */}
+                  <ProductMediaUploader
+                    media={variantMedia}
+                    onChange={(newMedia) => {
+                      setVariantMedia(newMedia);
+                      if (newMedia?.angles?.front) {
+                        setVariantImageInput(newMedia.angles.front);
+                      }
+                    }}
                   />
-                  {editingVariant && (
-                    <div className="pt-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsVariantDrawerOpen(false);
-                          openVariantImagesModal(parentProductForVariant, editingVariant);
-                        }}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-container font-label cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">photo_library</span>
-                        <span>Quản lý toàn bộ album ảnh biến thể này &rarr;</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Đặt làm biến thể chính */}
-                  <div className="p-3.5 rounded-xl bg-surface-container-low/50 border border-outline-variant/40 flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-on-surface font-label">
-                        Đặt làm biến thể chính
-                      </span>
-                      <span className="text-[11px] text-secondary font-body">
-                        Hiển thị mặc định trên trang bộ sưu tập
-                      </span>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={variantIsPrimary}
-                        onChange={(e) => setVariantIsPrimary(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-                    </label>
-                  </div>
                 </form>
               </div>
 
@@ -1783,14 +2212,14 @@ export const AdminProductsPage = () => {
                   onClick={() => setIsVariantDrawerOpen(false)}
                   className="w-1/2 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container transition-colors text-xs font-semibold font-label cursor-pointer"
                 >
-                  Hủy thao tác
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   form="variantDrawerForm"
                   className="w-1/2 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary-container transition-all text-xs font-semibold font-label shadow-sm hover:shadow-md cursor-pointer"
                 >
-                  Lưu thay đổi
+                  Lưu
                 </button>
               </div>
             </aside>

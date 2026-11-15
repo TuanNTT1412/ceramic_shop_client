@@ -28,11 +28,14 @@ client.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    // Nếu token hết hạn hoặc không hợp lệ (401), tự động dọn auth storage
-    if (error.response?.status === 401 && !error.config.url?.includes('/auth/login')) {
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER_INFO);
+    // Nếu token hết hạn hoặc không hợp lệ (401), tự động dọn auth storage (trừ khi đang đăng nhập hoặc mock token)
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+      const currentToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      if (currentToken && !currentToken.startsWith('mock_')) {
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER_INFO);
+      }
     }
     return Promise.reject(error);
   }
