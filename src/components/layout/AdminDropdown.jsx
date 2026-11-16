@@ -70,16 +70,8 @@ export const AdminDropdown = () => {
         <div className="absolute right-0 mt-2.5 w-64 rounded-2xl bg-[#faf6f0]/95 backdrop-blur-xl border border-[#e6dcce] shadow-[0_12px_36px_rgba(90,60,40,0.14)] z-50 p-2 overflow-hidden transform opacity-100 scale-100 transition-all origin-top-right animate-scaleUp">
           {/* Thông tin tài khoản ngắn gọn */}
           <div className="px-3 py-2 border-b border-[#ebdcd0] mb-1">
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-xs text-[#26201b] truncate">
-                {user?.name || 'Quản Trị Viên'}
-              </p>
-              <span className="text-[9px] bg-[#c2652a]/10 text-[#c2652a] px-1.5 py-0.5 rounded font-mono font-bold">
-                ADMIN
-              </span>
-            </div>
-            <p className="text-[10px] text-[#8a705b] truncate">
-              {user?.email || 'admin@gommoc.vn'}
+            <p className="font-semibold text-xs text-[#26201b] truncate">
+              {user?.name || 'Quản Trị Viên'}
             </p>
           </div>
 
@@ -89,7 +81,7 @@ export const AdminDropdown = () => {
             <Link
               to={ROUTES.PROFILE}
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
             >
               <div className="w-8 h-8 rounded-lg bg-[#f0e5d8] group-hover:bg-[#faefe4] flex items-center justify-center text-[#735e4d] group-hover:text-[#c2652a] transition-colors shrink-0">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,25 +93,16 @@ export const AdminDropdown = () => {
                   />
                 </svg>
               </div>
-              <div className="flex-1">
-                <div className="font-semibold leading-tight">Quản Lý Hồ Sơ Cá Nhân</div>
-                <div className="text-[10px] text-[#8a705b] mt-0.5">Thông tin tài khoản & mật khẩu</div>
-              </div>
-              <svg
-                className="w-3.5 h-3.5 text-[#b09b8b] group-hover:text-[#c2652a] group-hover:translate-x-0.5 transition-all"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
+              <span className="font-semibold text-xs text-[#26201b] group-hover:text-[#c2652a] transition-colors">
+                Quản Lý Hồ Sơ Cá Nhân
+              </span>
             </Link>
 
             {/* Mục 2: Xem cửa hàng bán lẻ */}
             <Link
               to={ROUTES.HOME}
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
             >
               <div className="w-8 h-8 rounded-lg bg-[#f0e5d8] group-hover:bg-[#faefe4] flex items-center justify-center text-[#735e4d] group-hover:text-[#c2652a] transition-colors shrink-0">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,10 +114,9 @@ export const AdminDropdown = () => {
                   />
                 </svg>
               </div>
-              <div className="flex-1">
-                <div className="font-semibold leading-tight">Xem Cửa Hàng Bán Lẻ</div>
-                <div className="text-[10px] text-[#8a705b] mt-0.5">Chuyển sang giao diện mua sắm</div>
-              </div>
+              <span className="font-semibold text-xs text-[#26201b] group-hover:text-[#c2652a] transition-colors">
+                Xem Cửa Hàng Bán Lẻ
+              </span>
             </Link>
 
             {/* Mục 3: Đăng xuất */}
@@ -142,7 +124,7 @@ export const AdminDropdown = () => {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors group cursor-pointer text-left font-medium"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors group cursor-pointer text-left font-medium"
               >
                 <div className="w-8 h-8 rounded-lg bg-rose-50 group-hover:bg-rose-100 flex items-center justify-center text-rose-600 transition-colors shrink-0">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,10 +136,7 @@ export const AdminDropdown = () => {
                     />
                   </svg>
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold leading-tight">Đăng Xuất Quản Trị</div>
-                  <div className="text-[10px] text-rose-400 mt-0.5">Kết thúc phiên làm việc an toàn</div>
-                </div>
+                <span className="font-semibold text-xs text-rose-600">Đăng Xuất Quản Trị</span>
               </button>
             </div>
           </div>

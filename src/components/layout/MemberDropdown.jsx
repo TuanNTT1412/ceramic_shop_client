@@ -74,7 +74,6 @@ export const MemberDropdown = () => {
           {isAuthenticated && (
             <div className="px-3 py-2 border-b border-[#ebdcd0] mb-1">
               <p className="font-semibold text-xs text-[#26201b] truncate">{user?.name}</p>
-              <p className="text-[10px] text-[#8a705b] truncate">{user?.email}</p>
             </div>
           )}
 
@@ -85,7 +84,7 @@ export const MemberDropdown = () => {
               <Link
                 to={ROUTES.LOGIN}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-[#c2652a] font-semibold hover:bg-[#faefe4] transition-colors group"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#c2652a] font-semibold hover:bg-[#faefe4] transition-colors group"
               >
                 <div className="w-8 h-8 rounded-lg bg-[#faefe4] flex items-center justify-center text-[#c2652a] shrink-0">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,18 +96,7 @@ export const MemberDropdown = () => {
                     />
                   </svg>
                 </div>
-                <div className="flex-1">
-                  <div className="leading-tight">Đăng Nhập</div>
-                  <div className="text-[10px] text-[#8a705b] font-normal mt-0.5">Truy cập hồ sơ & đơn mua</div>
-                </div>
-                <svg
-                  className="w-3.5 h-3.5 text-[#c2652a] group-hover:translate-x-0.5 transition-all"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
+                <span className="font-semibold text-xs text-[#c2652a]">Đăng Nhập</span>
               </Link>
             )}
 
@@ -116,7 +104,7 @@ export const MemberDropdown = () => {
             <Link
               to={ROUTES.PROFILE}
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
             >
               <div className="w-8 h-8 rounded-lg bg-[#f0e5d8] group-hover:bg-[#faefe4] flex items-center justify-center text-[#735e4d] group-hover:text-[#c2652a] transition-colors shrink-0">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,18 +116,9 @@ export const MemberDropdown = () => {
                   />
                 </svg>
               </div>
-              <div className="flex-1">
-                <div className="font-semibold leading-tight">Quản Lý Hồ Sơ Cá Nhân</div>
-                <div className="text-[10px] text-[#8a705b] mt-0.5">Thông tin tài khoản & sổ địa chỉ</div>
-              </div>
-              <svg
-                className="w-3.5 h-3.5 text-[#b09b8b] group-hover:text-[#c2652a] group-hover:translate-x-0.5 transition-all"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
+              <span className="font-semibold text-xs text-[#26201b] group-hover:text-[#c2652a] transition-colors">
+                Quản Lý Hồ Sơ Cá Nhân
+              </span>
             </Link>
 
             {/* Mục 2: Cổng Quản Trị Xưởng Gốm (Chỉ hiển thị khi tài khoản có quyền ADMIN) */}
@@ -148,7 +127,7 @@ export const MemberDropdown = () => {
                 <Link
                   to={ROUTES.ADMIN.DASHBOARD}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#faefe4] text-[#c2652a] transition-colors group"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#faefe4] text-[#c2652a] transition-colors group"
                 >
                   <div className="w-8 h-8 rounded-lg bg-[#ebdcd0] group-hover:bg-white flex items-center justify-center text-[#c2652a] transition-colors shrink-0">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -166,16 +145,8 @@ export const MemberDropdown = () => {
                       />
                     </svg>
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-xs text-[#26201b] group-hover:text-[#c2652a]">
-                      Cổng Quản Trị Xưởng
-                    </div>
-                    <div className="text-[10px] text-[#8a705b]">
-                      Quản lý đơn, kho & sản phẩm
-                    </div>
-                  </div>
-                  <span className="text-[9px] bg-[#c2652a]/10 text-[#c2652a] px-1.5 py-0.5 rounded font-mono font-semibold">
-                    ADMIN
+                  <span className="font-semibold text-xs text-[#26201b] group-hover:text-[#c2652a] transition-colors">
+                    Cổng Quản Trị Xưởng
                   </span>
                 </Link>
               </div>
@@ -187,7 +158,7 @@ export const MemberDropdown = () => {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors text-left group cursor-pointer"
                 >
                   <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,7 +170,7 @@ export const MemberDropdown = () => {
                       />
                     </svg>
                   </div>
-                  <div className="font-semibold text-xs">Đăng Xuất Tài Khoản</div>
+                  <span className="font-semibold text-xs text-rose-600">Đăng Xuất Tài Khoản</span>
                 </button>
               </div>
             )}
