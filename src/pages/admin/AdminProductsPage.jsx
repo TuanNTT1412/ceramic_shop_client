@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { productApi, categoryApi } from '../../api';
-import { useToast } from '../../context';
+import { useToast, useAdminFilter } from '../../context';
+import { AdminButton } from '../../components/layout';
 import { formatCurrency } from '../../utils/format';
 
 // Danh sách danh mục mặc định dự phòng
@@ -307,14 +308,14 @@ const ImagePickerField = ({
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Dán link ảnh (https://... hoặc /images/...)"
-            className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/40 rounded-xl text-xs text-on-surface outline-none focus:border-primary font-body"
+            className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/40 rounded-md text-xs text-on-surface outline-none focus:border-primary font-body"
           />
         </div>
       ) : (
         <div>
           {value ? (
-            <div className="relative group p-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl flex items-center gap-3.5 transition-all">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/30 flex-shrink-0 relative shadow-sm">
+            <div className="relative group p-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-md flex items-center gap-3.5 transition-all">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden bg-surface-container-lowest border border-outline-variant/30 flex-shrink-0 relative shadow-xs">
                 <img
                   src={value}
                   alt="Ảnh xem trước"
@@ -334,7 +335,7 @@ const ImagePickerField = ({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-[11px] font-semibold text-on-surface font-label transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-container-high text-[11px] font-semibold text-on-surface font-label transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[13px]">folder_open</span>
                     <span>Đổi ảnh từ máy</span>
@@ -342,7 +343,7 @@ const ImagePickerField = ({
                   <button
                     type="button"
                     onClick={() => onChange('')}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-error/10 text-[11px] font-semibold text-error font-label transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md hover:bg-error/10 text-[11px] font-semibold text-error font-label transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[13px]">delete</span>
                     <span>Xóa ảnh</span>
@@ -356,14 +357,14 @@ const ImagePickerField = ({
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-4 sm:p-5 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
+              className={`border-2 border-dashed rounded-md p-4 sm:p-5 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
                 isDragOver
                   ? 'border-primary bg-primary/5 text-primary scale-[0.99]'
                   : 'border-outline-variant/60 hover:border-primary/80 bg-surface-container-low/40 hover:bg-surface-container-low'
               }`}
             >
-              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                <span className="material-symbols-outlined text-[22px]">add_photo_alternate</span>
+              <div className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+                <span className="material-symbols-outlined text-[20px]">add_photo_alternate</span>
               </div>
               <div className="text-center">
                 <span className="text-xs font-semibold text-on-surface font-label hover:text-primary transition-colors">
@@ -509,19 +510,19 @@ const ProductMediaUploader = ({ media, onChange }) => {
       </div>
 
       {/* 3 Tab điều hướng tiếng Việt chuẩn */}
-      <div className="grid grid-cols-3 p-1 bg-surface-container rounded-xl gap-1 text-xs font-medium font-body select-none">
+      <div className="grid grid-cols-3 p-1 bg-surface-container rounded-md gap-1 text-xs font-medium font-body select-none">
         <button
           type="button"
           onClick={() => setActiveTab('angles')}
-          className={`py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-1.5 px-2 rounded-md text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             activeTab === 'angles'
-              ? 'bg-surface-container-lowest text-primary font-semibold shadow-xs'
+              ? 'bg-surface-container-lowest text-primary font-semibold shadow-2xs'
               : 'text-on-surface-variant hover:text-on-surface'
           }`}
         >
           <span>Bộ 4 góc ảnh</span>
           <span
-            className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+            className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
               activeTab === 'angles'
                 ? 'bg-primary/10 text-primary'
                 : 'bg-surface-container-highest text-secondary'
@@ -534,15 +535,15 @@ const ProductMediaUploader = ({ media, onChange }) => {
         <button
           type="button"
           onClick={() => setActiveTab('details')}
-          className={`py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-1.5 px-2 rounded-md text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             activeTab === 'details'
-              ? 'bg-surface-container-lowest text-primary font-semibold shadow-xs'
+              ? 'bg-surface-container-lowest text-primary font-semibold shadow-2xs'
               : 'text-on-surface-variant hover:text-on-surface'
           }`}
         >
           <span>Ảnh chi tiết</span>
           <span
-            className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+            className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
               activeTab === 'details'
                 ? 'bg-primary/10 text-primary'
                 : 'bg-surface-container-highest text-secondary'
@@ -555,15 +556,15 @@ const ProductMediaUploader = ({ media, onChange }) => {
         <button
           type="button"
           onClick={() => setActiveTab('video')}
-          className={`py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-1.5 px-2 rounded-md text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             activeTab === 'video'
-              ? 'bg-surface-container-lowest text-primary font-semibold shadow-xs'
+              ? 'bg-surface-container-lowest text-primary font-semibold shadow-2xs'
               : 'text-on-surface-variant hover:text-on-surface'
           }`}
         >
           <span>Video thực tế</span>
           <span
-            className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+            className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
               activeTab === 'video'
                 ? 'bg-primary/10 text-primary'
                 : 'bg-surface-container-highest text-secondary'
@@ -585,7 +586,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
               return (
                 <div
                   key={slot.key}
-                  className="p-2.5 rounded-xl border border-outline-variant/40 bg-surface-container-low/60 flex flex-col justify-between gap-2 transition-all hover:border-outline-variant"
+                  className="p-2.5 rounded-md border border-outline-variant/40 bg-surface-container-low/60 flex flex-col justify-between gap-2 transition-all hover:border-outline-variant"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-on-surface font-body">
@@ -612,7 +613,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
 
                   {currentUrl ? (
                     <div className="space-y-2">
-                      <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/30 group shadow-xs">
+                      <div className="relative aspect-square w-full rounded-md overflow-hidden bg-surface-container-lowest border border-outline-variant/30 group shadow-2xs">
                         <img
                           src={currentUrl}
                           alt={slot.label}
@@ -622,27 +623,27 @@ const ProductMediaUploader = ({ media, onChange }) => {
                       <div className="flex items-center justify-between gap-2 pt-0.5">
                         <label
                           htmlFor={fileInputId}
-                          className="flex-1 text-center py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface hover:text-primary cursor-pointer transition-colors"
+                          className="flex-1 text-center py-1 rounded-md bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface hover:text-primary cursor-pointer transition-colors"
                         >
                           Đổi ảnh
                         </label>
                         <button
                           type="button"
                           onClick={() => handleRemoveAngle(slot.key)}
-                          className="text-xs font-medium text-error hover:bg-error/10 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                          className="text-xs font-medium text-error hover:bg-error/10 px-2 py-1 rounded-md transition-colors cursor-pointer"
                         >
                           Xóa
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="aspect-square w-full rounded-lg border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-lowest/60 flex flex-col items-center justify-center gap-1.5 p-2 transition-colors">
+                    <div className="aspect-square w-full rounded-md border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-lowest/60 flex flex-col items-center justify-center gap-1.5 p-2 transition-colors">
                       <span className="text-xs text-secondary font-body text-center">
                         Chưa có ảnh {slot.label.toLowerCase()}
                       </span>
                       <label
                         htmlFor={fileInputId}
-                        className="px-3 py-1 rounded-lg bg-primary text-on-primary text-xs font-medium hover:bg-primary-container cursor-pointer transition-colors shadow-2xs mt-1"
+                        className="px-3 py-1 rounded-md bg-primary text-on-primary text-xs font-medium hover:bg-primary-container cursor-pointer transition-colors shadow-2xs mt-1"
                       >
                         Đổi ảnh
                       </label>
@@ -684,7 +685,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
             {(media?.details || []).map((detail, idx) => (
               <div
                 key={detail.id || idx}
-                className="group relative aspect-square rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/40 shadow-xs flex flex-col justify-end"
+                className="group relative aspect-square rounded-md overflow-hidden bg-surface-container-low border border-outline-variant/40 shadow-xs flex flex-col justify-end"
               >
                 <img
                   src={detail.url}
@@ -695,7 +696,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
                 <button
                   type="button"
                   onClick={() => handleRemoveDetail(detail.id)}
-                  className="absolute top-1.5 right-1.5 text-xs text-white bg-black/60 hover:bg-error px-1.5 py-0.5 rounded-md transition-colors cursor-pointer"
+                  className="absolute top-1.5 right-1.5 text-xs text-white bg-black/60 hover:bg-error px-1.5 py-0.5 rounded transition-colors cursor-pointer"
                   title="Xóa ảnh chi tiết"
                 >
                   Xóa
@@ -707,7 +708,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
             ))}
 
             {/* Ô thêm ảnh chi tiết mới */}
-            <div className="aspect-square rounded-xl border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-low/40 flex flex-col items-center justify-center p-2 transition-colors">
+            <div className="aspect-square rounded-md border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-low/40 flex flex-col items-center justify-center p-2 transition-colors">
               <label
                 htmlFor="add-detail-input"
                 className="text-xs font-medium text-primary hover:underline cursor-pointer text-center"
@@ -736,7 +737,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
 
           {media?.video ? (
             <div className="space-y-2.5">
-              <div className="rounded-xl overflow-hidden bg-black/90 border border-outline-variant/30 shadow-sm aspect-video flex items-center justify-center">
+              <div className="rounded-md overflow-hidden bg-black/90 border border-outline-variant/30 shadow-sm aspect-video flex items-center justify-center">
                 <video
                   key={media.video}
                   src={media.video}
@@ -746,7 +747,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
                 />
               </div>
 
-              <div className="p-3 bg-surface-container-low rounded-xl border border-outline-variant/40 flex items-center justify-between">
+              <div className="p-3 bg-surface-container-low rounded-md border border-outline-variant/40 flex items-center justify-between">
                 <div>
                   <span className="block text-xs font-semibold text-on-surface font-body">
                     Thước phim thực tế tại xưởng
@@ -758,14 +759,14 @@ const ProductMediaUploader = ({ media, onChange }) => {
                 <div className="flex items-center gap-2">
                   <label
                     htmlFor="video-file-input"
-                    className="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface cursor-pointer transition-colors"
+                    className="px-3 py-1.5 rounded-md bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface cursor-pointer transition-colors"
                   >
                     Đổi video
                   </label>
                   <button
                     type="button"
                     onClick={handleRemoveVideo}
-                    className="px-2 py-1.5 rounded-lg text-xs font-medium text-error hover:bg-error/10 transition-colors cursor-pointer"
+                    className="px-2 py-1.5 rounded-md text-xs font-medium text-error hover:bg-error/10 transition-colors cursor-pointer"
                   >
                     Xóa
                   </button>
@@ -773,7 +774,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
               </div>
             </div>
           ) : (
-            <div className="rounded-xl border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-low/40 p-6 flex flex-col items-center justify-center gap-2 text-center transition-colors">
+            <div className="rounded-md border-2 border-dashed border-outline-variant/60 hover:border-primary/80 bg-surface-container-low/40 p-6 flex flex-col items-center justify-center gap-2 text-center transition-colors">
               <span className="text-xs font-medium text-on-surface font-body">
                 Chưa có video cho biến thể này
               </span>
@@ -782,7 +783,7 @@ const ProductMediaUploader = ({ media, onChange }) => {
               </p>
               <label
                 htmlFor="video-file-input"
-                className="px-4 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-medium hover:bg-primary-container cursor-pointer transition-colors shadow-xs mt-1"
+                className="px-4 py-1.5 rounded-md bg-primary text-on-primary text-xs font-medium hover:bg-primary-container cursor-pointer transition-colors shadow-xs mt-1"
               >
                 Đổi video
               </label>
@@ -796,17 +797,26 @@ const ProductMediaUploader = ({ media, onChange }) => {
 
 export const AdminProductsPage = () => {
   const toast = useToast();
+  const {
+    searchQuery,
+    productFilters,
+    setProductFilters,
+    activeFilterCount,
+    resetCurrentFilters,
+  } = useAdminFilter();
+
+  const selectedCategory = productFilters.category;
+  const statusFilter = productFilters.status;
+  const glazeFilter = productFilters.glaze;
+
+  const setSelectedCategory = (val) => setProductFilters((prev) => ({ ...prev, category: val }));
+  const setStatusFilter = (val) => setProductFilters((prev) => ({ ...prev, status: val }));
+  const setGlazeFilter = (val) => setProductFilters((prev) => ({ ...prev, glaze: val }));
 
   // State danh sách sản phẩm & danh mục
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Bộ lọc
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [glazeFilter, setGlazeFilter] = useState('ALL');
 
   // Điều khiển mở rộng/thu gọn danh sách biến thể từng sản phẩm
   const [expandedProducts, setExpandedProducts] = useState(['prd-0104']);
@@ -855,6 +865,22 @@ export const AdminProductsPage = () => {
   const [newImageIsPrimary, setNewImageIsPrimary] = useState(false);
   const [newImageOrder, setNewImageOrder] = useState(0);
   const [isSubmittingImage, setIsSubmittingImage] = useState(false);
+
+  // ==========================================
+  // DRAWER 4: XEM CHI TIẾT SẢN PHẨM (Slide-over Drawer)
+  // ==========================================
+  const [selectedProductForDetail, setSelectedProductForDetail] = useState(null);
+  const [isProductDetailDrawerOpen, setIsProductDetailDrawerOpen] = useState(false);
+
+  const handleOpenProductDetail = (product) => {
+    setSelectedProductForDetail(product);
+    setIsProductDetailDrawerOpen(true);
+  };
+
+  const handleCloseProductDetail = () => {
+    setIsProductDetailDrawerOpen(false);
+    setSelectedProductForDetail(null);
+  };
 
   // Tải sản phẩm & danh mục từ Backend API
   const fetchCatalogData = async (showToastNotice = false) => {
@@ -981,6 +1007,19 @@ export const AdminProductsPage = () => {
       return true;
     });
   }, [products, searchQuery, selectedCategory, statusFilter, glazeFilter]);
+
+  // Phân trang sản phẩm chuẩn Master Table
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(start, start + itemsPerPage);
+  }, [filteredProducts, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, statusFilter, glazeFilter]);
 
   // Toggle mở/đóng xem biến thể của một sản phẩm
   const toggleExpand = (productId) => {
@@ -1487,420 +1526,350 @@ export const AdminProductsPage = () => {
   return (
     <div className="flex flex-col w-full pb-16 font-body text-on-background animate-fadeIn">
       {/* ========================================================= */}
-      {/* 1. TOP HEADLINE & ACTION ZONE (THANH TÌM KIẾM & BỘ LỌC)  */}
+      {/* 0. HEADER CONTEXT & TITLE                                 */}
       {/* ========================================================= */}
-      <section className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/40 shadow-[0_2px_16px_rgba(58,48,42,0.03)] mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
-        {/* Ô tìm kiếm */}
-        <div className="w-full lg:w-1/3 relative flex items-center">
-          <span className="material-symbols-outlined absolute left-3.5 text-outline text-[19px] pointer-events-none">
-            search
-          </span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm theo tên tác phẩm, mã SKU, chất men nung..."
-            className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest focus:border-primary transition-all font-body"
-          />
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-2 pb-8 border-b border-outline-variant/30">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-headline font-bold text-on-surface tracking-tight">
+            Quản Lý Sản Phẩm
+          </h1>
+          <p className="max-w-2xl text-xs md:text-sm text-on-surface-variant font-body mt-1 leading-relaxed">
+            Quản lý danh mục tác phẩm, chuẩn hóa bộ ảnh 4 góc chụp, chi tiết vi sai, video 360° và số lượng tồn kho từng biến thể SKU.
+          </p>
         </div>
 
-        {/* Các Dropdown lọc */}
-        <div className="w-full lg:w-auto flex flex-wrap sm:flex-nowrap items-center gap-3">
-          {/* Lọc danh mục */}
-          <div className="relative w-full sm:w-auto">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full appearance-none pl-3.5 pr-8 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary cursor-pointer font-medium font-body"
-            >
-              <option value="ALL">Mọi danh mục tác phẩm</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
-              expand_more
-            </span>
-          </div>
-
-          {/* Lọc trạng thái mở bán */}
-          <div className="relative w-full sm:w-auto">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full appearance-none pl-3.5 pr-8 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary cursor-pointer font-medium font-body"
-            >
-              <option value="ALL">Tất cả trạng thái</option>
-              <option value="ACTIVE">Đang mở bán (Active)</option>
-              <option value="DRAFT">Tạm ẩn (Draft)</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
-              expand_more
-            </span>
-          </div>
-
-          {/* Lọc theo cốt đất & men */}
-          <div className="relative w-full sm:w-auto">
-            <select
-              value={glazeFilter}
-              onChange={(e) => setGlazeFilter(e.target.value)}
-              className="w-full appearance-none pl-3.5 pr-8 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary cursor-pointer font-medium font-body"
-            >
-              <option value="ALL">Lọc theo cốt đất &amp; men nung</option>
-              <option value="Men tro củi tự nhiên">Men tro củi tự nhiên</option>
-              <option value="Men rêu cổ phù sa">Men rêu cổ phù sa</option>
-              <option value="Sa thạch hỏa biến">Sa thạch hỏa biến</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
-              expand_more
-            </span>
-          </div>
-
-          {/* Nút làm mới */}
-          <button
-            type="button"
-            onClick={() => fetchCatalogData(true)}
-            disabled={isRefreshing}
-            className="p-2.5 rounded-xl bg-surface-container-low/80 border border-outline-variant/40 text-secondary hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer disabled:opacity-50"
-            title="Làm mới bộ lọc & dữ liệu"
-          >
-            <span
-              className={`material-symbols-outlined text-[19px] ${
-                isRefreshing ? 'animate-spin' : ''
-              }`}
-            >
-              refresh
-            </span>
-          </button>
-
-          {/* Nút Thêm Tác Phẩm Mới */}
-          <button
-            type="button"
+        {/* Nút Thao Tác Header Chuẩn Hóa */}
+        <div className="flex items-center gap-3 shrink-0">
+          <AdminButton
+            icon="add"
             onClick={openCreateProductModal}
-            className="px-4 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary-container text-xs font-semibold font-label shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            title="Thêm sản phẩm mới"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            <span>Khai Hỏa Tác Phẩm</span>
-          </button>
+            Thêm Mới Sản Phẩm
+          </AdminButton>
         </div>
-      </section>
+      </div>
 
       {/* ========================================================= */}
-      {/* 2. METRIC SAHARA BENTO SUMMARY (4 CARDS)                  */}
+      {/* 3. BẢNG MASTER DATA TABLE TÁC PHẨM (ĐỒNG BỘ 100% QUY CHUẨN)*/}
       {/* ========================================================= */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Card 1: Tổng tác phẩm */}
-        <div className="p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-[0_2px_16px_rgba(58,48,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label">
-              Tổng tác phẩm
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-sans font-bold text-on-surface tracking-tight">
-              {metrics.totalProducts}
-            </span>
-            <span className="text-xs text-secondary font-body">mã tác phẩm gốc</span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-on-surface-variant font-medium">
-            <span>
-              Tăng <strong className="text-primary font-bold">+4 mẫu</strong> tuần này
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Đang mở bán */}
-        <div className="p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-[0_2px_16px_rgba(58,48,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label">
-              Đang mở bán
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-sans font-bold text-primary tracking-tight">
-              {metrics.activeProducts}
-            </span>
-            <span className="text-xs text-secondary font-body">tác phẩm kích hoạt</span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-secondary font-medium">
-            <span>
-              <strong className="text-on-surface font-bold">{metrics.activePercent}%</strong> tỷ lệ
-              hiển thị storefront
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Tổng biến thể SKU */}
-        <div className="p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-[0_2px_16px_rgba(58,48,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label">
-              Tổng biến thể SKU
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-sans font-bold text-on-surface tracking-tight">
-              {metrics.totalVariants}
-            </span>
-            <span className="text-xs text-secondary font-body">quy cách men / size</span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-secondary font-medium">
-            <span>Khớp chuẩn Prisma Schema</span>
-          </div>
-        </div>
-
-        {/* Card 4: Cảnh báo tồn kho */}
-        <div className="p-5 rounded-2xl bg-surface-container-lowest border border-tertiary-fixed/60 shadow-[0_2px_16px_rgba(58,48,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-tertiary font-label">
-              Cảnh báo tồn kho
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-sans font-bold text-tertiary tracking-tight">
-              {metrics.lowStockCount < 10 ? `0${metrics.lowStockCount}` : metrics.lowStockCount}
-            </span>
-            <span className="text-xs text-tertiary font-semibold font-body">
-              SKU cạn kho đất nung
-            </span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-tertiary font-medium">
-            <span>Cần lên lịch nung mẻ bổ sung</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================= */}
-      {/* 3. DANH SÁCH SẢN PHẨM CHIẾM ĐẾN SÁT BÊN PHẢI TRANG (100% W)*/}
-      {/* ========================================================= */}
-      <div className="w-full flex flex-col gap-6">
-        {filteredProducts.length === 0 ? (
-          <div className="bg-surface-container-lowest rounded-2xl border border-dashed border-outline-variant/60 p-12 text-center flex flex-col items-center gap-3">
-            <span className="material-symbols-outlined text-4xl text-outline">search_off</span>
-            <h3 className="font-headline text-lg font-bold text-on-surface">
-              Không tìm thấy tác phẩm phù hợp
-            </h3>
-            <p className="text-xs text-on-surface-variant max-w-md">
-              Vui lòng điều chỉnh lại từ khóa hoặc bộ lọc danh mục phía trên.
-            </p>
-          </div>
-        ) : (
-          filteredProducts.map((product) => {
-            const isExpanded = expandedProducts.includes(product.id);
-            const variantPrices = (product.variants || []).map((v) => v.price);
-            const minPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : 0;
-            const maxPrice = variantPrices.length > 0 ? Math.max(...variantPrices) : 0;
-            const totalStock = (product.variants || []).reduce(
-              (sum, v) => sum + (v.stockQuantity || 0),
-              0
-            );
-
-            return (
-              <article
-                key={product.id}
-                className="w-full bg-surface-container-lowest rounded-2xl border border-outline-variant/50 shadow-[0_2px_16px_rgba(58,48,42,0.03)] overflow-hidden transition-all duration-300"
-              >
-                {/* Header Tác Phẩm Cha */}
-                <div className="p-5 bg-surface-container-low/60 border-b border-outline-variant/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-start sm:items-center gap-4">
-                    <img
-                      src={product.primaryImage}
-                      alt={product.name}
-                      className="w-16 h-16 rounded-xl object-cover shadow-sm border border-outline-variant/50 flex-shrink-0"
-                    />
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-lg font-headline font-semibold text-on-surface tracking-tight">
-                          {product.name}
-                        </h2>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-surface-container-highest text-on-surface-variant font-mono tracking-wider">
-                          {product.code}
-                        </span>
-                        <span className="px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-primary-fixed text-on-primary-fixed-variant font-body">
-                          {product.categoryName}
-                        </span>
-                        {product.isReturnable ? (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-secondary-container text-on-secondary-container font-body">
-                            Hỗ trợ Đổi Trả
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-surface-container-highest text-secondary font-body">
-                            Không Đổi Trả
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 mt-2 text-xs text-secondary flex-wrap font-body">
-                        <span>
-                          Tổng tồn: <strong className="text-on-surface font-semibold">{totalStock} cái</strong>
-                        </span>
-                        <span>•</span>
-                        <span>
-                          <strong className="text-on-surface font-semibold">{product.variants?.length || 0}</strong> biến thể SKU
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hành động Tác Phẩm */}
-                  <div className="flex items-center gap-3.5 self-end md:self-center">
-                    {/* Toggle hiển thị bán */}
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
-                      <span className="text-xs font-medium text-secondary font-label">Hiển thị</span>
-                      <div className="relative">
-                        <input
-                          type="checkbox"
-                          checked={product.isActive}
-                          onChange={() => toggleProductActive(product)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-                      </div>
-                    </label>
-
-                    {/* Nút sửa sản phẩm */}
-                    <button
-                      type="button"
-                      onClick={() => openEditProductModal(product)}
-                      className="px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/40 text-xs font-semibold text-on-surface hover:text-primary hover:border-primary transition-all flex items-center gap-1 cursor-pointer"
-                      title="Sửa thông tin sản phẩm"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">edit</span>
-                      <span className="hidden sm:inline">Sửa tác phẩm</span>
-                    </button>
-
-                    {/* Nút thu gọn / mở rộng biến thể */}
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(product.id)}
-                      className="p-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
-                      title={isExpanded ? 'Thu gọn biến thể' : 'Mở rộng biến thể'}
-                    >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {isExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+      <div className="w-full bg-surface-container-lowest rounded-lg border border-outline-variant/30 shadow-xs overflow-hidden mt-8">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left text-xs font-body">
+            <thead className="bg-surface-container-low text-on-surface-variant font-label uppercase tracking-wider text-[11px] border-b border-outline-variant/30 select-none">
+              <tr>
+                <th className="py-3.5 px-3 font-semibold w-12 text-center">STT</th>
+                <th className="py-3.5 px-4 font-semibold min-w-[260px]">Tác Phẩm &amp; Mã</th>
+                <th className="py-3.5 px-4 font-semibold min-w-[130px]">Danh Mục</th>
+                <th className="py-3.5 px-4 font-semibold">Khoảng Giá</th>
+                <th className="py-3.5 px-4 font-semibold text-center">SKU / Tồn Kho</th>
+                <th className="py-3.5 px-4 font-semibold text-center">Mở Bán</th>
+                <th className="py-3.5 px-5 font-semibold text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant/20 font-body">
+              {filteredProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <span className="material-symbols-outlined text-4xl text-outline">
+                        search_off
                       </span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Danh Sách Biến Thể Con (Hiện chi tiết khi mở rộng) */}
-                {isExpanded ? (
-                  <div className="p-5 space-y-3 bg-surface-container-lowest/40">
-                    <div className="flex items-center justify-between pb-1.5">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label">
-                        Phân loại &amp; Biến thể tồn kho (Prisma ProductVariant)
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => openCreateVariantDrawer(product)}
-                        className="text-xs font-semibold text-primary hover:text-primary-container flex items-center gap-1 transition-colors font-label cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">add_circle</span>
-                        <span>Thêm biến thể mới</span>
-                      </button>
+                      <h3 className="font-headline text-base font-bold text-on-surface">
+                        Không tìm thấy tác phẩm phù hợp
+                      </h3>
+                      <p className="text-xs text-on-surface-variant max-w-md">
+                        Vui lòng điều chỉnh lại từ khóa tìm kiếm hoặc bộ lọc danh mục phía trên.
+                      </p>
                     </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedProducts.map((product, index) => {
+                  const isExpanded = expandedProducts.includes(product.id);
+                  const variantPrices = (product.variants || []).map((v) => v.price);
+                  const minPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : 0;
+                  const maxPrice = variantPrices.length > 0 ? Math.max(...variantPrices) : 0;
+                  const totalStock = (product.variants || []).reduce(
+                    (sum, v) => sum + (v.stockQuantity || 0),
+                    0
+                  );
 
-                    {/* Các hàng biến thể */}
-                    {product.variants?.map((variant) => (
-                      <div
-                        key={variant.id}
-                        className="p-3.5 rounded-xl bg-surface-container-low/50 hover:bg-surface-container border border-outline-variant/30 hover:border-outline-variant transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
-                      >
-                        <div className="flex items-center gap-3.5">
-                          <img
-                            src={variant.imageUrl}
-                            alt={variant.variantName}
-                            className={`w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-outline-variant/40 shadow-sm ${
-                              variant.stockQuantity <= 0 ? 'opacity-70' : ''
-                            }`}
-                          />
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-on-surface font-body">
-                                {variant.variantName}
+                  return (
+                    <React.Fragment key={product.id}>
+                      {/* Dòng chính sản phẩm cha */}
+                      <tr className="hover:bg-surface-container-low/40 transition-colors group">
+                        {/* Cột 1: STT */}
+                        <td className="py-4 px-3 text-center font-label text-on-surface-variant font-medium text-xs">
+                          {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, '0')}
+                        </td>
+
+                        {/* Tác phẩm & Mã */}
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={product.primaryImage}
+                              alt={product.name}
+                              className="w-12 h-12 rounded-md object-cover border border-outline-variant/40 shadow-xs shrink-0"
+                            />
+                            <div className="flex flex-col min-w-0">
+                              <span
+                                onClick={() => handleOpenProductDetail(product)}
+                                className="font-sans text-sm font-semibold text-on-surface group-hover:text-primary transition-colors block cursor-pointer truncate max-w-[240px]"
+                              >
+                                {product.name}
                               </span>
-                              {variant.stockQuantity <= 0 ? (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-error-container text-on-error-container font-body">
-                                  Hết hàng
+                              <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-on-surface-variant">
+                                <span className="font-mono bg-surface-container px-1.5 py-0.2 rounded text-[10px]">
+                                  {product.code}
                                 </span>
-                              ) : (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container-highest text-secondary font-body">
-                                  Cốt đất mộc
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2.5 text-xs text-secondary mt-0.5 font-body">
-                              <span>SKU: {variant.sku}</span>
-                              <span>•</span>
-                              <span className="text-on-surface-variant font-medium">
-                                {variant.spec}
-                              </span>
+                                {product.isReturnable && (
+                                  <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1 rounded font-medium">
+                                    Đổi trả
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        </td>
 
-                        <div className="flex items-center gap-6 self-end md:self-center">
-                          <div className="text-right">
-                            <div className="text-sm font-bold font-headline text-on-surface">
-                              {formatCurrency(variant.price)}
-                            </div>
-                            <div
-                              className={`text-xs font-medium font-body ${
-                                variant.stockQuantity <= 0
-                                  ? 'text-error font-bold'
-                                  : 'text-secondary'
-                              }`}
-                            >
-                              {variant.stockQuantity <= 0 ? (
-                                'Tồn: 0 cái'
-                              ) : (
-                                <>
-                                  Tồn: <span className="font-bold text-on-surface">{variant.stockQuantity} cái</span>
-                                </>
-                              )}
-                            </div>
+                        {/* Danh mục */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-surface-container text-on-surface-variant">
+                            {product.categoryName}
+                          </span>
+                        </td>
+
+                        {/* Khoảng giá */}
+                        <td className="py-4 px-4 whitespace-nowrap font-medium text-on-surface">
+                          {minPrice === maxPrice
+                            ? formatCurrency(minPrice)
+                            : `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`}
+                        </td>
+
+                        {/* SKU / Tồn kho */}
+                        <td className="py-4 px-4 text-center whitespace-nowrap">
+                          <div className="flex flex-col items-center">
+                            <span className="font-semibold text-on-surface">
+                              {totalStock} cái
+                            </span>
+                            <span className="text-[10px] text-on-surface-variant">
+                              {product.variants?.length || 0} SKU
+                            </span>
                           </div>
+                        </td>
 
-                          <button
-                            type="button"
-                            onClick={() => openEditVariantDrawer(product, variant)}
-                            className="px-3.5 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/50 text-xs font-semibold font-body text-primary hover:bg-primary hover:text-on-primary hover:border-primary shadow-xs transition-all cursor-pointer"
+                        {/* Toggle switch Mở bán */}
+                        <td className="py-4 px-4 text-center whitespace-nowrap">
+                          <label
+                            className="inline-flex items-center justify-center gap-1.5 cursor-pointer select-none"
+                            title={product.isActive ? 'Đang mở bán (Click để tạm dừng)' : 'Đã tạm dừng (Click để mở bán)'}
                           >
-                            Sửa
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  /* Gợi ý khi thu gọn */
-                  <div className="px-5 py-3.5 bg-surface-container-low/20 flex items-center justify-between text-xs text-secondary">
-                    <span className="font-body">
-                      Gồm {product.variants?.length || 0} biến thể:{' '}
-                      {product.variants?.map((v, idx) => (
-                        <span key={v.id}>
-                          <strong className="text-on-surface font-semibold">
-                            {v.variantName} (Tồn: {v.stockQuantity})
-                          </strong>
-                          {idx < product.variants.length - 1 ? ', ' : ''}
-                        </span>
-                      ))}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(product.id)}
-                      className="text-primary font-semibold font-label hover:underline flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <span>Chi tiết biến thể</span>
-                      <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                    </button>
-                  </div>
-                )}
-              </article>
-            );
-          })
-        )}
+                            <input
+                              type="checkbox"
+                              checked={Boolean(product.isActive)}
+                              onChange={() => toggleProductActive(product)}
+                              className="sr-only peer"
+                            />
+                            <div className="relative w-9 h-5 bg-stone-300 rounded-full peer peer-checked:bg-primary transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all after:shadow-sm peer-checked:after:translate-x-4"></div>
+                            <span className={`text-[11px] font-semibold min-w-[24px] text-left ${product.isActive ? 'text-primary' : 'text-stone-400'}`}>
+                              {product.isActive ? 'Bán' : 'Ẩn'}
+                            </span>
+                          </label>
+                        </td>
+
+                        {/* Thao tác (Thứ tự: Xem chi tiết -> Sửa -> Xem biến thể) */}
+                        <td className="py-4 px-5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* 1. Xem chi tiết */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenProductDetail(product)}
+                              className="w-8 h-8 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
+                              title="Xem chi tiết tác phẩm"
+                            >
+                              <span className="material-symbols-outlined text-[17px]">visibility</span>
+                            </button>
+
+                            {/* 2. Sửa */}
+                            <button
+                              type="button"
+                              onClick={() => openEditProductModal(product)}
+                              className="w-8 h-8 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
+                              title="Chỉnh sửa tác phẩm"
+                            >
+                              <span className="material-symbols-outlined text-[17px]">edit</span>
+                            </button>
+
+                            {/* 3. Xem biến thể */}
+                            <button
+                              type="button"
+                              onClick={() => toggleExpand(product.id)}
+                              className={`w-8 h-8 rounded-lg transition-colors inline-flex items-center justify-center cursor-pointer ${
+                                isExpanded
+                                  ? 'bg-primary/10 text-primary font-bold'
+                                  : 'hover:bg-surface-container text-on-surface-variant hover:text-primary'
+                              }`}
+                              title={isExpanded ? 'Thu gọn danh sách biến thể SKU' : 'Xem danh sách biến thể SKU'}
+                            >
+                              <span className="material-symbols-outlined text-[17px]">
+                                {isExpanded ? 'expand_less' : 'expand_more'}
+                              </span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Dòng mở rộng hiển thị các biến thể SKU con */}
+                      {isExpanded && (
+                        <tr className="bg-surface-container-low/20 border-b border-outline-variant/30">
+                          <td colSpan={7} className="p-4 pl-12 pr-6">
+                            <div className="rounded-md border border-outline-variant/30 overflow-hidden bg-surface-container-lowest shadow-2xs">
+                              <div className="px-4 py-2.5 bg-surface-container-low/60 flex items-center justify-between border-b border-outline-variant/20">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-secondary font-label">
+                                    Chi tiết biến thể SKU ({product.variants?.length || 0})
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => openCreateVariantDrawer(product)}
+                                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer font-label"
+                                >
+                                  <span className="material-symbols-outlined text-[15px]">add_circle</span>
+                                  <span>Thêm biến thể</span>
+                                </button>
+                              </div>
+
+                              <div className="overflow-x-auto w-full">
+                                <table className="w-full text-left text-xs">
+                                  <thead className="bg-surface-container-low/40 text-on-surface-variant font-label uppercase text-[10px] tracking-wider border-b border-outline-variant/20">
+                                    <tr>
+                                      <th className="py-2.5 px-3 font-semibold">Tên Biến Thể</th>
+                                      <th className="py-2.5 px-3 font-semibold">Mã SKU</th>
+                                      <th className="py-2.5 px-3 font-semibold">Quy Cách / Men</th>
+                                      <th className="py-2.5 px-3 font-semibold text-right">Đơn Giá</th>
+                                      <th className="py-2.5 px-3 font-semibold text-center">Tồn Kho</th>
+                                      <th className="py-2.5 px-3 font-semibold text-right">Thao Tác</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-outline-variant/15 font-body">
+                                    {product.variants?.map((variant) => (
+                                      <tr
+                                        key={variant.id}
+                                        className="hover:bg-surface-container-low/30 transition-colors"
+                                      >
+                                        <td className="py-2.5 px-3">
+                                          <div className="flex items-center gap-2.5">
+                                            <img
+                                              src={variant.imageUrl}
+                                              alt={variant.variantName}
+                                              className="w-8 h-8 rounded-lg object-cover border border-outline-variant/40 shrink-0"
+                                            />
+                                            <span className="font-medium text-on-surface">
+                                              {variant.variantName}
+                                            </span>
+                                          </div>
+                                        </td>
+                                        <td className="py-2.5 px-3 font-mono text-[11px] text-on-surface-variant">
+                                          {variant.sku}
+                                        </td>
+                                        <td className="py-2.5 px-3 text-[11px] text-on-surface-variant">
+                                          {variant.spec}
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right font-medium text-on-surface">
+                                          {formatCurrency(variant.price)}
+                                        </td>
+                                        <td className="py-2.5 px-3 text-center">
+                                          {variant.stockQuantity <= 0 ? (
+                                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-error-container text-on-error-container">
+                                              Cạn kho
+                                            </span>
+                                          ) : (
+                                            <span className="font-semibold text-on-surface text-xs">
+                                              {variant.stockQuantity} cái
+                                            </span>
+                                          )}
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right">
+                                          <button
+                                            type="button"
+                                            onClick={() => openEditVariantDrawer(product, variant)}
+                                            className="px-2.5 py-1 rounded-md bg-surface-container-low hover:bg-surface-container text-primary text-[11px] font-semibold transition-colors cursor-pointer border border-outline-variant/30"
+                                          >
+                                            Sửa
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Chân Bảng: Phân Trang Chuẩn Master Data Table */}
+        <div className="px-5 py-3.5 bg-surface-container-lowest border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-on-surface-variant">
+          <div>
+            Hiển thị{' '}
+            <strong className="text-on-surface font-semibold">
+              {filteredProducts.length === 0
+                ? 0
+                : `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(
+                    currentPage * itemsPerPage,
+                    filteredProducts.length
+                  )}`}
+            </strong>{' '}
+            trên <strong className="text-on-surface font-semibold">{filteredProducts.length}</strong>{' '}
+            tác phẩm gốm mộc
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface disabled:opacity-40 disabled:cursor-not-allowed border border-outline-variant/30 cursor-pointer"
+              title="Trang trước"
+            >
+              <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <button
+                key={pageNum}
+                type="button"
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer ${
+                  pageNum === currentPage
+                    ? 'bg-primary text-on-primary shadow-xs'
+                    : 'bg-surface-container-low hover:bg-surface-container text-on-surface border border-outline-variant/30'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface disabled:opacity-40 disabled:cursor-not-allowed border border-outline-variant/30 cursor-pointer"
+              title="Trang tiếp theo"
+            >
+              <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ========================================================= */}
@@ -1908,11 +1877,11 @@ export const AdminProductsPage = () => {
       {/* ========================================================= */}
       {isProductModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-surface-container-lowest w-full max-w-xl rounded-2xl border border-outline-variant/40 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-surface-container-lowest w-full max-w-xl rounded-lg border border-outline-variant/50 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Header Form */}
             <div className="px-6 py-4 bg-surface-container flex items-center justify-between border-b border-outline-variant/30">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary font-headline text-lg font-bold">
+                <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center text-on-primary font-headline text-lg font-bold">
                   G
                 </div>
                 <div>
@@ -1946,7 +1915,7 @@ export const AdminProductsPage = () => {
                   value={productFormName}
                   onChange={(e) => setProductFormName(e.target.value)}
                   placeholder="Ví dụ: Bộ Ấm Trà Mộc Men Tro Củi"
-                  className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-medium transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/60 rounded-md text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-medium transition-colors"
                 />
               </div>
 
@@ -1959,7 +1928,7 @@ export const AdminProductsPage = () => {
                   <select
                     value={productFormCategory}
                     onChange={(e) => setProductFormCategory(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary font-medium cursor-pointer"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/60 rounded-md text-xs text-on-surface focus:outline-none focus:border-primary font-medium cursor-pointer"
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -1978,7 +1947,7 @@ export const AdminProductsPage = () => {
                     value={productFormGlaze}
                     onChange={(e) => setProductFormGlaze(e.target.value)}
                     placeholder="VD: Men tro củi tự nhiên"
-                    className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary font-medium"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/60 rounded-md text-xs text-on-surface focus:outline-none focus:border-primary font-medium"
                   />
                 </div>
               </div>
@@ -1993,13 +1962,13 @@ export const AdminProductsPage = () => {
                   value={productFormDesc}
                   onChange={(e) => setProductFormDesc(e.target.value)}
                   placeholder="Nung nhiệt độ cao 1300°C bằng củi tự nhiên, phù sa sông Thu Bồn..."
-                  className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary transition-colors resize-none"
+                  className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/60 rounded-md text-xs text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary transition-colors resize-none"
                 />
               </div>
 
               {/* Nếu là tạo mới, cấu hình biến thể đầu tiên */}
               {!editingProduct && (
-                <div className="p-4 rounded-xl bg-surface-container-low/50 border border-outline-variant/30 space-y-3">
+                <div className="p-4 rounded-md bg-surface-container-low/50 border border-outline-variant/40 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-primary font-label">
                       Biến Thể Quy Cách Ban Đầu (Khởi Tạo)
@@ -2015,7 +1984,7 @@ export const AdminProductsPage = () => {
                         type="number"
                         value={productFormInitialPrice}
                         onChange={(e) => setProductFormInitialPrice(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/40 rounded-lg text-xs font-mono font-semibold"
+                        className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/60 rounded-md text-xs font-mono font-semibold focus:outline-none focus:border-primary"
                       />
                     </div>
                     <div>
@@ -2026,7 +1995,7 @@ export const AdminProductsPage = () => {
                         type="number"
                         value={productFormInitialStock}
                         onChange={(e) => setProductFormInitialStock(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/40 rounded-lg text-xs font-mono font-semibold"
+                        className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/60 rounded-md text-xs font-mono font-semibold focus:outline-none focus:border-primary"
                       />
                     </div>
                   </div>
@@ -2041,7 +2010,7 @@ export const AdminProductsPage = () => {
               )}
 
               {/* Kích hoạt bán */}
-              <div className="p-3.5 rounded-xl bg-surface-container-low/50 border border-outline-variant/40 flex items-center justify-between">
+              <div className="p-3.5 rounded-md bg-surface-container-low/50 border border-outline-variant/40 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-on-surface font-label">
                     Mở bán ngay trên Storefront
@@ -2062,7 +2031,7 @@ export const AdminProductsPage = () => {
               </div>
 
               {/* Chính sách đổi trả hàng */}
-              <div className="p-3.5 rounded-xl bg-surface-container-low/50 border border-outline-variant/40 flex items-center justify-between">
+              <div className="p-3.5 rounded-md bg-surface-container-low/50 border border-outline-variant/40 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-on-surface font-label">
                     Hỗ trợ Đổi Trả Tác Phẩm
@@ -2087,13 +2056,13 @@ export const AdminProductsPage = () => {
                 <button
                   type="button"
                   onClick={() => setIsProductModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container text-xs font-semibold font-label cursor-pointer"
+                  className="px-4 py-2 rounded-md bg-surface-container-low border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container text-xs font-semibold font-label cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary-container text-xs font-semibold font-label shadow-sm hover:shadow-md transition-all cursor-pointer"
+                  className="px-5 py-2 rounded-md bg-primary text-on-primary hover:bg-primary-container text-xs font-semibold font-label shadow-sm hover:shadow-md transition-all cursor-pointer"
                 >
                   {editingProduct ? 'Lưu' : 'Tạo mới'}
                 </button>
@@ -2145,7 +2114,7 @@ export const AdminProductsPage = () => {
                       value={variantNameInput}
                       onChange={(e) => setVariantNameInput(e.target.value)}
                       placeholder="Ví dụ: Men tro củi • Size M"
-                      className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-medium transition-colors font-body"
+                      className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/60 rounded-md text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-medium transition-colors font-body"
                     />
                   </div>
 
@@ -2161,7 +2130,7 @@ export const AdminProductsPage = () => {
                         min={0}
                         value={variantPriceInput}
                         onChange={(e) => setVariantPriceInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-body font-semibold transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/60 rounded-md text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-body font-semibold transition-colors"
                       />
                     </div>
                     <div>
@@ -2173,7 +2142,7 @@ export const AdminProductsPage = () => {
                         min={0}
                         value={variantStockInput}
                         onChange={(e) => setVariantStockInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-body font-semibold transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/60 rounded-md text-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:border-primary font-body font-semibold transition-colors"
                       />
                     </div>
                   </div>
@@ -2188,7 +2157,7 @@ export const AdminProductsPage = () => {
                       value={variantSpecInput}
                       onChange={(e) => setVariantSpecInput(e.target.value)}
                       placeholder="Ví dụ: Dung tích 220ml • Men tro nung củi"
-                      className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/40 rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary transition-colors font-body"
+                      className="w-full px-3.5 py-2.5 bg-surface-container-low/70 border border-outline-variant/60 rounded-md text-xs text-on-surface focus:outline-none focus:border-primary transition-colors font-body"
                     />
                   </div>
 
@@ -2210,14 +2179,14 @@ export const AdminProductsPage = () => {
                 <button
                   type="button"
                   onClick={() => setIsVariantDrawerOpen(false)}
-                  className="w-1/2 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container transition-colors text-xs font-semibold font-label cursor-pointer"
+                  className="w-1/2 py-2 rounded-md bg-surface-container-low border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container transition-colors text-xs font-semibold font-label cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   form="variantDrawerForm"
-                  className="w-1/2 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary-container transition-all text-xs font-semibold font-label shadow-sm hover:shadow-md cursor-pointer"
+                  className="w-1/2 py-2 rounded-md bg-primary text-on-primary hover:bg-primary-container transition-all text-xs font-semibold font-label shadow-sm hover:shadow-md cursor-pointer"
                 >
                   Lưu
                 </button>
@@ -2238,12 +2207,12 @@ export const AdminProductsPage = () => {
             onClick={() => !isSubmittingImage && setIsImagesModalOpen(false)}
           />
 
-          <div className="relative bg-surface-container-lowest max-w-2xl w-full rounded-2xl shadow-2xl p-6 lg:p-7 z-10 border border-outline-variant/40 space-y-6 max-h-[90vh] overflow-y-auto animate-scaleUp">
+          <div className="relative bg-surface-container-lowest max-w-2xl w-full rounded-lg shadow-2xl p-6 lg:p-7 z-10 border border-outline-variant/50 space-y-6 max-h-[90vh] overflow-y-auto animate-scaleUp">
             {/* Header */}
             <div className="flex items-start justify-between pb-4 border-b border-outline-variant/30">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary font-headline text-xl font-bold shadow-sm">
-                  <span className="material-symbols-outlined text-[20px]">photo_library</span>
+                <div className="w-9 h-9 rounded-md bg-primary flex items-center justify-center text-on-primary font-headline text-lg font-bold shadow-sm">
+                  <span className="material-symbols-outlined text-[18px]">photo_library</span>
                 </div>
                 <div>
                   <h3 className="text-lg font-headline font-bold text-on-surface">
@@ -2262,7 +2231,7 @@ export const AdminProductsPage = () => {
               <button
                 type="button"
                 onClick={() => setIsImagesModalOpen(false)}
-                className="text-secondary hover:text-on-surface p-1 rounded-lg cursor-pointer"
+                className="text-secondary hover:text-on-surface p-1 rounded-md cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
@@ -2283,20 +2252,20 @@ export const AdminProductsPage = () => {
                 {selectedVariantForImages.variant.images?.map((img, idx) => (
                   <div
                     key={img.id || idx}
-                    className={`relative p-2.5 rounded-xl border transition-all flex flex-col justify-between ${
+                    className={`relative p-2.5 rounded-md border transition-all flex flex-col justify-between ${
                       img.isPrimary
-                        ? 'bg-primary/5 border-primary shadow-sm'
+                        ? 'bg-primary/5 border-primary shadow-xs'
                         : 'bg-surface-container-low/50 border-outline-variant/40 hover:border-outline-variant'
                     }`}
                   >
-                    <div className="aspect-square w-full rounded-lg overflow-hidden bg-surface-variant relative mb-2 border border-outline-variant/30">
+                    <div className="aspect-square w-full rounded-md overflow-hidden bg-surface-variant relative mb-2 border border-outline-variant/30">
                       <img
                         src={img.imageUrl}
                         alt="Ảnh biến thể"
                         className="w-full h-full object-cover"
                       />
                       {img.isPrimary && (
-                        <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-primary text-on-primary text-[10px] font-bold shadow-sm font-label">
+                        <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded bg-primary text-on-primary text-[10px] font-bold shadow-xs font-label">
                           ★ Ảnh chính
                         </span>
                       )}
@@ -2333,7 +2302,7 @@ export const AdminProductsPage = () => {
             </div>
 
             {/* Section 2: Form Thêm Ảnh Mới (POST /variants/:variantId/images) */}
-            <div className="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/40 space-y-3">
+            <div className="p-4 rounded-md bg-surface-container-low/70 border border-outline-variant/40 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[18px]">add_photo_alternate</span>
                 <span className="text-xs font-bold uppercase tracking-wider text-on-surface font-label">
@@ -2370,7 +2339,7 @@ export const AdminProductsPage = () => {
                         min={0}
                         value={newImageOrder}
                         onChange={(e) => setNewImageOrder(e.target.value)}
-                        className="w-14 px-2 py-1 text-xs bg-surface-container-lowest border border-outline-variant/40 rounded-lg text-center font-mono"
+                        className="w-14 px-2 py-1 text-xs bg-surface-container-lowest border border-outline-variant/40 rounded-md text-center font-mono"
                       />
                     </div>
                   </div>
@@ -2378,7 +2347,7 @@ export const AdminProductsPage = () => {
                   <button
                     type="submit"
                     disabled={isSubmittingImage}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold rounded-md shadow-xs transition-all cursor-pointer disabled:opacity-50"
                   >
                     <span className="material-symbols-outlined text-[16px]">add</span>
                     <span>{isSubmittingImage ? 'Đang lưu...' : 'Thêm Vào Album'}</span>
@@ -2392,10 +2361,153 @@ export const AdminProductsPage = () => {
               <button
                 type="button"
                 onClick={() => setIsImagesModalOpen(false)}
-                className="px-5 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-xs font-semibold text-on-surface border border-outline-variant/40 transition-colors cursor-pointer"
+                className="px-5 py-2 rounded-md bg-surface-container-low hover:bg-surface-container text-xs font-semibold text-on-surface border border-outline-variant/40 transition-colors cursor-pointer"
               >
                 Đóng Album Ảnh
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* DRAWER 4: XEM CHI TIẾT TÁC PHẨM (SLIDE-OVER DRAWER)       */}
+      {/* ========================================================= */}
+      {isProductDetailDrawerOpen && selectedProductForDetail && (
+        <div className="fixed inset-0 z-50 overflow-hidden animate-fadeIn">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            onClick={handleCloseProductDetail}
+          />
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-2xl bg-surface-container-lowest shadow-2xl flex flex-col justify-between overflow-y-auto border-l border-outline-variant/30">
+              {/* Header */}
+              <div className="px-6 py-5 bg-surface-container border-b border-outline-variant/30 flex items-center justify-between sticky top-0 z-10">
+                <div>
+                  <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-primary">
+                    Chi Tiết Tác Phẩm #{selectedProductForDetail.code || selectedProductForDetail.id.slice(-6).toUpperCase()}
+                  </span>
+                  <h3 className="font-headline text-lg font-bold text-on-surface mt-0.5">
+                    {selectedProductForDetail.name}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCloseProductDetail}
+                  className="w-8 h-8 rounded-md hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 space-y-6 flex-1">
+                {/* Ảnh đại diện & Thông tin nhanh */}
+                <div className="flex gap-4 items-start p-4 bg-surface-container-low rounded-lg border border-outline-variant/40">
+                  <img
+                    src={selectedProductForDetail.primaryImage || '/images/hero-vase.jpg'}
+                    alt={selectedProductForDetail.name}
+                    className="w-24 h-24 rounded-md object-cover border border-outline-variant/40 shadow-xs shrink-0"
+                  />
+                  <div className="space-y-1.5 min-w-0 flex-1 text-xs">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-primary/10 text-primary">
+                        {selectedProductForDetail.categoryName}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${selectedProductForDetail.isActive ? 'bg-emerald-50 text-emerald-800' : 'bg-stone-200 text-stone-600'}`}>
+                        {selectedProductForDetail.isActive ? 'Đang mở bán' : 'Tạm dừng bán'}
+                      </span>
+                      {selectedProductForDetail.isReturnable && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700">
+                          Được đổi trả
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-on-surface-variant">
+                      <span className="font-medium">Mã tác phẩm:</span> <span className="font-mono">{selectedProductForDetail.code}</span>
+                    </div>
+                    <div className="text-on-surface-variant">
+                      <span className="font-medium">Tổng biến thể:</span> {selectedProductForDetail.variants?.length || 0} SKU
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mô tả tác phẩm */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-secondary font-label mb-2">
+                    Mô Tả &amp; Đặc Tính Nghệ Thuật
+                  </h4>
+                  <div className="p-4 bg-surface-container-lowest rounded-md border border-outline-variant/40 text-xs text-on-surface-variant leading-relaxed">
+                    {selectedProductForDetail.description || 'Chưa có thông tin mô tả chi tiết cho tác phẩm gốm mộc này.'}
+                  </div>
+                </div>
+
+                {/* Danh sách biến thể SKU */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-secondary font-label">
+                      Danh Sách Quy Cách &amp; Dòng Men ({selectedProductForDetail.variants?.length || 0})
+                    </h4>
+                  </div>
+                  <div className="space-y-2">
+                    {(selectedProductForDetail.variants || []).map((v) => (
+                      <div key={v.id} className="p-3 bg-surface-container-low rounded-md border border-outline-variant/40 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={v.images?.[0]?.imageUrl || v.image || selectedProductForDetail.primaryImage}
+                            alt={v.variantName}
+                            className="w-10 h-10 rounded-md object-cover border border-outline-variant/40 shrink-0"
+                          />
+                          <div>
+                            <div className="font-semibold text-on-surface">{v.variantName}</div>
+                            <div className="text-[11px] text-on-surface-variant">
+                              Mã SKU: <span className="font-mono">{v.sku || 'N/A'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-primary font-mono">{formatCurrency(v.price)}</div>
+                          <div className="text-[11px] text-on-surface-variant">Tồn kho: {v.stockQuantity}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-5 bg-surface-container border-t border-outline-variant/30 flex items-center justify-between sticky bottom-0">
+                <a
+                  href={`/product/${selectedProductForDetail.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 rounded-md bg-surface-container-lowest hover:bg-surface-container text-xs font-semibold text-on-surface border border-outline-variant/40 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                  <span>Xem trên Storefront</span>
+                </a>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prod = selectedProductForDetail;
+                      handleCloseProductDetail();
+                      openEditProductModal(prod);
+                    }}
+                    className="px-4 py-2 rounded-md bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Chỉnh Sửa</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCloseProductDetail}
+                    className="px-4 py-2 rounded-md bg-surface-container-high hover:bg-surface-container text-xs font-semibold text-on-surface transition-colors cursor-pointer"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { userApi } from '../../api';
-import { useToast } from '../../context';
+import { useToast, useAdminFilter } from '../../context';
+import { AdminButton } from '../../components/layout';
 import { formatDate, formatPhoneNumber } from '../../utils/format';
 
 // ============================================================================
@@ -259,10 +260,19 @@ export const AdminUsersPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Bộ lọc tìm kiếm & Vai trò & Trạng thái
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
+  // Bộ lọc tìm kiếm & Vai trò & Trạng thái từ AdminFilterContext
+  const {
+    searchQuery = '',
+    setSearchQuery,
+    userFilters,
+    setUserFilters,
+  } = useAdminFilter();
+
+  const selectedRole = userFilters?.role || '';
+  const selectedStatus = userFilters?.status || '';
+
+  const setSelectedRole = (val) => setUserFilters((prev) => ({ ...prev, role: val }));
+  const setSelectedStatus = (val) => setUserFilters((prev) => ({ ...prev, status: val }));
 
   // Phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -422,7 +432,12 @@ export const AdminUsersPage = () => {
         user.id.toLowerCase().includes(q) ||
         user.code.toLowerCase().includes(q);
       const matchRole = !selectedRole || user.role === selectedRole;
-      const matchStatus = !selectedStatus || String(user.isActive) === selectedStatus;
+      let matchStatus = true;
+      if (selectedStatus === 'true' || selectedStatus === 'ACTIVE') {
+        matchStatus = user.isActive === true;
+      } else if (selectedStatus === 'false' || selectedStatus === 'LOCKED') {
+        matchStatus = user.isActive === false;
+      }
       return matchSearch && matchRole && matchStatus;
     });
   }, [users, searchQuery, selectedRole, selectedStatus]);
@@ -434,9 +449,11 @@ export const AdminUsersPage = () => {
   }, [filteredUsers, currentPage]);
 
   const handleResetFilters = () => {
-    setSearchQuery('');
-    setSelectedRole('');
-    setSelectedStatus('');
+    if (setSearchQuery) setSearchQuery('');
+    setUserFilters({
+      role: '',
+      status: '',
+    });
     setCurrentPage(1);
     setUsers(INITIAL_USERS);
     toast.info('Đã làm mới bộ lọc và khôi phục danh sách khách hàng.');
@@ -599,216 +616,45 @@ export const AdminUsersPage = () => {
       {/* ========================================================= */}
       {/* 1. PAGE HEADER & BREADCRUMB                              */}
       {/* ========================================================= */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-xs text-on-surface-variant font-label tracking-wide">
-            <span>Quản Trị Xưởng</span>
-            <span className="text-outline">/</span>
-            <span className="text-primary font-medium">Quản Lý Khách Hàng</span>
-          </div>
-          <h1 className="font-headline text-3xl md:text-4xl font-normal text-on-surface tracking-tight">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-2 pb-8 border-b border-outline-variant/30">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-headline font-bold text-on-surface tracking-tight">
             Quản Lý Khách Hàng &amp; Tài Khoản
           </h1>
-          <p className="text-xs md:text-sm text-on-surface-variant max-w-2xl font-light">
-            Quản lý hồ sơ hội viên trà đạo, nghệ nhân xưởng nung và phân quyền tài khoản hệ sinh thái Sahara Atelier.
+          <p className="max-w-2xl text-xs md:text-sm text-on-surface-variant font-body mt-1 leading-relaxed">
+            Quản lý hồ sơ hội viên trà đạo, nghệ nhân xưởng nung và phân quyền tài khoản hệ thống.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3 shrink-0">
-          <button
+          <AdminButton
+            variant="secondary"
+            icon="file_download"
             onClick={handleExportExcel}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-semibold tracking-wide transition-all shadow-sm border border-outline-variant/40"
             title="Xuất file danh sách tài khoản định dạng Excel/CSV"
           >
-            <span className="material-symbols-outlined text-[18px] text-primary">file_download</span>
-            <span>Xuất Excel</span>
-          </button>
-          <button
-            onClick={() => handleOpenDrawer(users[0] || INITIAL_USERS[0])}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold tracking-wide transition-all shadow-sm shadow-primary/20"
-            title="Mở hồ sơ mẫu của hội viên Sa Thạch VIP"
-          >
-            <span className="material-symbols-outlined text-[18px]">person_search</span>
-            <span>Hồ sơ mẫu (VIP)</span>
-          </button>
+            Xuất Excel
+          </AdminButton>
         </div>
-      </section>
+      </div>
 
       {/* ========================================================= */}
-      {/* 2. KPI SUMMARY METRICS (4 BENTO CARDS)                    */}
+      {/* 4. USERS MASTER DATA TABLE                                */}
       {/* ========================================================= */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Card 1: Tổng Tài Khoản */}
-        <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 flex flex-col justify-between transition-all hover:border-primary/40">
-          <div>
-            <span className="text-xs font-medium text-on-surface-variant tracking-wide">
-              Tổng Tài Khoản
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-sans font-bold text-on-surface">
-              {metrics.totalCount}
-            </span>
-            <span className="inline-flex items-center text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              +18 tháng này
-            </span>
-          </div>
-          <span className="text-[11px] text-on-surface-variant/80 mt-1">
-            Đồng bộ từ hệ thống OAuth &amp; Khách xưởng
-          </span>
-        </div>
-
-        {/* Card 2: Khách Thân Thiết */}
-        <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 flex flex-col justify-between transition-all hover:border-primary/40">
-          <div>
-            <span className="text-xs font-medium text-on-surface-variant tracking-wide">
-              Khách Thân Thiết (CUSTOMER)
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-sans font-bold text-on-surface">
-              328
-            </span>
-            <span className="inline-flex items-center text-[11px] font-semibold text-primary bg-primary-fixed px-2 py-0.5 rounded-full border border-primary-fixed-dim/40">
-              42.6% quay lại
-            </span>
-          </div>
-          <span className="text-[11px] text-on-surface-variant/80 mt-1">
-            Hội viên thưởng trà &amp; sưu tập độc bản
-          </span>
-        </div>
-
-        {/* Card 3: Nhân Sự Xưởng */}
-        <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 flex flex-col justify-between transition-all hover:border-primary/40">
-          <div>
-            <span className="text-xs font-medium text-on-surface-variant tracking-wide">
-              Nhân Sự Xưởng (STAFF &amp; ADMIN)
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-sans font-bold text-on-surface">
-              14
-            </span>
-            <span className="text-[11px] font-medium text-on-surface-variant">
-              5 Quản trị • 9 Nghệ nhân
-            </span>
-          </div>
-          <span className="text-[11px] text-on-surface-variant/80 mt-1">
-            Quyền truy cập khu lò nung &amp; điều phối
-          </span>
-        </div>
-
-        {/* Card 4: Tài Khoản Tạm Khóa */}
-        <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 flex flex-col justify-between transition-all hover:border-error/40">
-          <div>
-            <span className="text-xs font-medium text-on-surface-variant tracking-wide">
-              Tài Khoản Tạm Khóa
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-3xl font-sans font-bold text-error">
-              {metrics.lockedCount}
-            </span>
-            <span className="inline-flex items-center text-[11px] font-semibold text-error bg-error-container px-2 py-0.5 rounded-full border border-error/20">
-              Cần rà soát
-            </span>
-          </div>
-          <span className="text-[11px] text-on-surface-variant/80 mt-1">
-            Trạng thái isActive = false từ API
-          </span>
-        </div>
-      </section>
-
-      {/* ========================================================= */}
-      {/* 3. TOOLBAR FILTERS (TÌM KIẾM, VAI TRÒ, TRẠNG THÁI)        */}
-      {/* ========================================================= */}
-      <section className="bg-surface-container-lowest p-4 rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 mb-6 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-        <div className="flex flex-1 flex-col sm:flex-row items-center gap-3">
-          {/* Ô Tìm Kiếm */}
-          <div className="relative w-full sm:w-80">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">
-              search
-            </span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm theo họ tên, email khách, mã ID..."
-              className="w-full pl-9 pr-3 py-2 text-xs bg-surface-container-low rounded-xl text-on-surface placeholder:text-outline outline-none focus:bg-surface-container focus:ring-1 focus:ring-primary/20 transition-all font-body border border-outline-variant/30"
-            />
-          </div>
-
-          {/* Lọc Theo Vai Trò (Role) */}
-          <div className="w-full sm:w-48 relative">
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full py-2 pl-3 pr-8 text-xs bg-surface-container-low rounded-xl text-on-surface outline-none cursor-pointer focus:bg-surface-container transition-all font-body border border-outline-variant/30 appearance-none"
-            >
-              <option value="">Tất cả vai trò</option>
-              <option value="CUSTOMER">CUSTOMER (Khách hàng)</option>
-              <option value="STAFF">STAFF (Nghệ nhân/NV)</option>
-              <option value="ADMIN">ADMIN (Quản trị viên)</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
-              expand_more
-            </span>
-          </div>
-
-          {/* Lọc Theo Trạng Thái (Status) */}
-          <div className="w-full sm:w-48 relative">
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full py-2 pl-3 pr-8 text-xs bg-surface-container-low rounded-xl text-on-surface outline-none cursor-pointer focus:bg-surface-container transition-all font-body border border-outline-variant/30 appearance-none"
-            >
-              <option value="">Tất cả trạng thái</option>
-              <option value="true">Đang hoạt động</option>
-              <option value="false">Đã khóa</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
-              expand_more
-            </span>
-          </div>
-        </div>
-
-        {/* Nút Làm Mới */}
-        <div className="flex items-center justify-end gap-2">
-          <button
-            onClick={handleResetFilters}
-            disabled={isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium text-on-surface-variant hover:text-on-surface bg-surface-container-low hover:bg-surface-container transition-colors border border-outline-variant/30"
-            title="Làm mới bộ lọc & lấy lại dữ liệu"
-          >
-            <span
-              className={`material-symbols-outlined text-[16px] ${
-                isRefreshing ? 'animate-spin text-primary' : ''
-              }`}
-            >
-              refresh
-            </span>
-            <span>{isRefreshing ? 'Đang nạp...' : 'Làm mới'}</span>
-          </button>
-        </div>
-      </section>
-
-      {/* ========================================================= */}
-      {/* 4. USERS DATA TABLE (FULL WIDTH CHIẾM ĐẾN SÁT BÊN PHẢI)    */}
-      {/* ========================================================= */}
-      <section className="bg-surface-container-lowest rounded-2xl shadow-[0_2px_16px_rgba(58,48,42,0.03)] border border-outline-variant/40 overflow-hidden w-full">
+      <section className="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-xs overflow-hidden w-full mt-8">
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-surface-container-low/70 text-on-surface-variant font-medium tracking-wide uppercase text-[10px] border-b border-outline-variant/30">
+          <table className="w-full text-left text-xs font-body">
+            <thead className="bg-surface-container-low text-on-surface-variant font-label uppercase tracking-wider text-[11px] border-b border-outline-variant/30 select-none">
               <tr>
-                <th className="py-3.5 px-5">Thành Viên</th>
-                <th className="py-3.5 px-4">Email &amp; Liên Hệ</th>
-                <th className="py-3.5 px-4">Vai Trò</th>
-                <th className="py-3.5 px-4">Ngày Tham Gia</th>
-                <th className="py-3.5 px-5 text-right">Thao Tác</th>
+                <th className="py-3.5 px-5 font-semibold">Thành Viên</th>
+                <th className="py-3.5 px-4 font-semibold">Email &amp; Liên Hệ</th>
+                <th className="py-3.5 px-4 font-semibold">Vai Trò</th>
+                <th className="py-3.5 px-4 font-semibold">Ngày Tham Gia</th>
+                <th className="py-3.5 px-5 font-semibold text-right">Thao Tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant/20 text-on-surface">
+            <tbody className="divide-y divide-outline-variant/20 font-body">
               {paginatedUsers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-on-surface-variant">
@@ -842,7 +688,7 @@ export const AdminUsersPage = () => {
                   return (
                     <tr
                       key={user.id}
-                      className={`${rowBg} hover:bg-surface-container-low/60 transition-colors group`}
+                      className="hover:bg-surface-container-low/40 transition-colors group"
                     >
                       {/* Cột 1: Thông tin thành viên */}
                       <td className="py-4 px-5">
@@ -894,9 +740,9 @@ export const AdminUsersPage = () => {
                             onClick={() => handleOpenDrawer(user)}
                             title="Xem chi tiết hồ sơ hội viên"
                             aria-label="Xem chi tiết hồ sơ hội viên"
-                            className="w-8 h-8 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
+                            className="w-8 h-8 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
                           >
-                            <span className="material-symbols-outlined text-[16px]">
+                            <span className="material-symbols-outlined text-[17px]">
                               visibility
                             </span>
                           </button>
@@ -906,9 +752,9 @@ export const AdminUsersPage = () => {
                             onClick={() => handleOpenRoleModal(user)}
                             title="Phân quyền vai trò (Role)"
                             aria-label="Phân quyền vai trò (Role)"
-                            className="w-8 h-8 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
+                            className="w-8 h-8 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
                           >
-                            <span className="material-symbols-outlined text-[16px]">
+                            <span className="material-symbols-outlined text-[17px]">
                               manage_accounts
                             </span>
                           </button>
@@ -919,9 +765,9 @@ export const AdminUsersPage = () => {
                               onClick={() => handlePromptToggleStatus(user)}
                               title="Khóa tài khoản"
                               aria-label="Khóa tài khoản"
-                              className="w-8 h-8 rounded-full bg-surface-container-low text-error hover:bg-error-container hover:text-error transition-colors inline-flex items-center justify-center cursor-pointer"
+                              className="w-8 h-8 rounded-lg hover:bg-error-container text-on-surface-variant hover:text-error transition-colors inline-flex items-center justify-center cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[16px]">
+                              <span className="material-symbols-outlined text-[17px]">
                                 lock
                               </span>
                             </button>
@@ -931,9 +777,9 @@ export const AdminUsersPage = () => {
                               onClick={() => handlePromptToggleStatus(user)}
                               title="Mở khóa tài khoản"
                               aria-label="Mở khóa tài khoản"
-                              className="w-8 h-8 rounded-full bg-surface-container-low text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors inline-flex items-center justify-center cursor-pointer"
+                              className="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-700 hover:text-emerald-800 transition-colors inline-flex items-center justify-center cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[16px]">
+                              <span className="material-symbols-outlined text-[17px]">
                                 lock_open
                               </span>
                             </button>
@@ -951,7 +797,7 @@ export const AdminUsersPage = () => {
         {/* ========================================================= */}
         {/* TABLE FOOTER & PHÂN TRANG (PAGINATION)                    */}
         {/* ========================================================= */}
-        <div className="px-5 py-4 bg-surface-container-lowest border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-on-surface-variant">
+        <div className="px-5 py-3.5 bg-surface-container-lowest border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-on-surface-variant">
           <div>
             Hiển thị{' '}
             <span className="font-semibold text-on-surface">

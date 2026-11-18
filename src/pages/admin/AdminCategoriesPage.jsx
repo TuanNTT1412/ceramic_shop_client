@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { categoryApi } from '../../api';
-import { useToast } from '../../context';
+import { useToast, useAdminFilter } from '../../context';
+import { AdminButton } from '../../components/layout';
 
 // Dữ liệu danh mục mẫu đồng bộ thiết kế Stitch & database
 const INITIAL_CATEGORIES = [
@@ -53,8 +54,8 @@ const INITIAL_CATEGORIES = [
 ];
 
 export const AdminCategoriesPage = () => {
+  const { searchQuery } = useAdminFilter();
   const [categories, setCategories] = useState(INITIAL_CATEGORIES);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Modal State (Trung tâm màn hình)
@@ -80,7 +81,10 @@ export const AdminCategoriesPage = () => {
             id: cat.id,
             name: cat.name,
             description: cat.description || 'Chưa có mô tả chi tiết',
-            productsCount: cat.products?.length || cat._count?.products || 0,
+            productsCount:
+              typeof cat._count?.products === 'number'
+                ? cat._count.products
+                : cat.products?.length || 0,
             updatedAt: cat.updatedAt
               ? new Date(cat.updatedAt).toLocaleDateString('vi-VN')
               : 'Mới tạo',
@@ -258,135 +262,32 @@ export const AdminCategoriesPage = () => {
 
       {/* 1. Header Trang & Nút Thao Tác Chính */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-2 pb-8 border-b border-outline-variant/30">
-        <div className="flex flex-col max-w-2xl">
-          <nav className="flex items-center gap-2 text-xs font-label text-on-surface-variant uppercase tracking-widest mb-2.5">
-            <span>Quản Trị Xưởng</span>
-            <span className="text-outline text-[10px]">/</span>
-            <span>Quản Lý Tác Phẩm</span>
-            <span className="text-outline text-[10px]">/</span>
-            <span className="text-primary font-semibold">Danh Mục</span>
-          </nav>
-          <h1 className="font-headline text-3xl lg:text-4xl text-on-surface font-semibold tracking-tight leading-tight">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-headline font-bold text-on-surface tracking-tight">
             Quản Lý Danh Mục Tác Phẩm
           </h1>
-          <p className="font-body text-xs sm:text-sm text-on-surface-variant mt-1.5 leading-relaxed">
-            Tổ chức và chuẩn hóa nhóm tác phẩm gốm mộc, dòng men tự nhiên của
-            xưởng nghệ thuật Sahara Atelier.
+          <p className="max-w-2xl text-xs md:text-sm text-on-surface-variant font-body mt-1 leading-relaxed">
+            Tổ chức và chuẩn hóa nhóm tác phẩm gốm mộc, đặc tính cốt đất và các dòng men tự nhiên của xưởng.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
+          <AdminButton
+            icon="add"
             onClick={handleOpenCreateModal}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-on-primary text-xs font-label font-semibold shadow-sm hover:bg-[#a8531e] active:scale-[0.98] transition-all cursor-pointer"
+            title="Tạo danh mục tác phẩm mới"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            <span>Tạo Danh Mục Mới</span>
-          </button>
+            Tạo Danh Mục Mới
+          </AdminButton>
         </div>
       </div>
 
-      {/* 2. Thống Kê Nhanh (3 KPI Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-        {/* Thẻ 1 */}
-        <div className="bg-surface-container-low rounded-xl p-5 shadow-xs border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex flex-col">
-            <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
-              Tổng Số Danh Mục
-            </span>
-            <span className="font-sans text-3xl font-bold text-on-surface mt-1">
-              {String(stats.totalCategories).padStart(2, '0')}
-            </span>
-          </div>
-          <div className="mt-4 flex items-center gap-1.5 text-xs text-on-surface-variant">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            <span>{stats.totalCategories} nhóm tác phẩm gốm mộc</span>
-          </div>
-        </div>
-
-        {/* Thẻ 2 */}
-        <div className="bg-surface-container-low rounded-xl p-5 shadow-xs border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
-              Nhiều Tác Phẩm Nhất
-            </span>
-            <span className="font-sans text-xl font-bold text-on-surface mt-1 truncate">
-              {stats.maxCategoryName}
-            </span>
-          </div>
-          <div className="mt-4 flex items-center gap-1.5 text-xs text-on-surface-variant">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-            <span>{stats.maxCategoryCount} tác phẩm phân loại</span>
-          </div>
-        </div>
-
-        {/* Thẻ 3 */}
-        <div className="bg-surface-container-low rounded-xl p-5 shadow-xs border border-outline-variant/30 flex flex-col justify-between">
-          <div className="flex flex-col">
-            <span className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant">
-              Tổng Tác Phẩm Đã Phân Loại
-            </span>
-            <span className="font-sans text-3xl font-bold text-primary mt-1">
-              {stats.totalProducts}
-            </span>
-          </div>
-          <div className="mt-4 flex items-center gap-1.5 text-xs text-on-surface-variant">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span>{stats.totalProducts} tác phẩm gốm mộc</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Thanh Công Cụ & Tìm Kiếm */}
-      <div className="bg-surface-container-lowest rounded-xl p-4 shadow-xs mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border border-outline-variant/30">
-        <div className="relative flex-1 max-w-md">
-          <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">
-            search
-          </span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm kiếm danh mục tác phẩm..."
-            className="w-full bg-surface-container-low pl-10 pr-4 py-2 rounded-lg text-xs text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container transition-colors"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface text-xs font-bold"
-            >
-              ×
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2 self-end md:self-auto">
-          <button
-            type="button"
-            onClick={fetchCategories}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-low text-xs font-label text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all cursor-pointer"
-            title="Làm mới dữ liệu"
-          >
-            <span
-              className={`material-symbols-outlined text-[16px] ${
-                isLoading ? 'animate-spin' : ''
-              }`}
-            >
-              refresh
-            </span>
-            <span>Làm mới</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 4. Bảng Danh Sách Danh Mục Phẳng (KÉO RỘNG SÁT BÊN PHẢI 100%) */}
-      <div className="w-full bg-surface-container-lowest rounded-xl shadow-xs overflow-hidden border border-outline-variant/30">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="bg-surface-container-low text-on-surface-variant font-label uppercase tracking-wider text-[11px] border-b border-outline-variant/30">
+      {/* 4. Bảng Danh Sách Danh Mục Master (ĐỒNG BỘ 100% QUY CHUẨN DATA TABLE) */}
+      <div className="w-full bg-surface-container-lowest rounded-lg border border-outline-variant/30 shadow-xs overflow-hidden mt-8">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left text-xs font-body">
+            <thead className="bg-surface-container-low text-on-surface-variant font-label uppercase tracking-wider text-[11px] border-b border-outline-variant/30 select-none">
+              <tr>
                 <th className="py-3.5 px-4 font-semibold w-16 text-center">
                   STT
                 </th>
@@ -424,7 +325,7 @@ export const AdminCategoriesPage = () => {
                 filteredCategories.map((cat, index) => (
                   <tr
                     key={cat.id}
-                    className="hover:bg-surface-container/50 transition-colors group"
+                    className="hover:bg-surface-container-low/40 transition-colors group"
                   >
                     {/* STT */}
                     <td className="py-4 px-4 text-center font-label text-on-surface-variant font-medium">
@@ -445,39 +346,53 @@ export const AdminCategoriesPage = () => {
 
                     {/* Số Lượng Sản Phẩm */}
                     <td className="py-4 px-3 text-center whitespace-nowrap text-xs font-semibold text-on-surface">
-                      {cat.productsCount || 0}
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium ${
+                        cat.productsCount > 0
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-surface-container text-on-surface-variant'
+                      }`}>
+                        {cat.productsCount || 0} mẫu
+                      </span>
                     </td>
 
                     {/* Ngày Cập Nhật */}
-                    <td className="py-4 px-3 text-center text-[11px] text-on-surface-variant whitespace-nowrap">
+                    <td className="py-4 px-3 text-center text-[11px] text-on-surface-variant whitespace-nowrap font-mono">
                       {cat.updatedAt}
                     </td>
 
                     {/* Cột Thao Tác (Sửa & Xóa) */}
                     <td className="py-4 px-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1.5">
                         {/* Nút Sửa */}
                         <button
                           type="button"
                           onClick={() => handleOpenEditModal(cat)}
-                          className="w-8 h-8 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
+                          className="w-8 h-8 rounded-md hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
                           title="Chỉnh sửa danh mục"
                           aria-label="Chỉnh sửa danh mục"
                         >
-                          <span className="material-symbols-outlined text-[16px]">
+                          <span className="material-symbols-outlined text-[17px]">
                             edit
                           </span>
                         </button>
 
-                        {/* Nút Xóa */}
+                        {/* Nút Xóa (Ràng buộc toàn vẹn) */}
                         <button
                           type="button"
                           onClick={() => setDeleteConfirmItem(cat)}
-                          className="w-8 h-8 rounded-full bg-surface-container-low text-error hover:bg-error-container hover:text-error transition-colors inline-flex items-center justify-center cursor-pointer"
-                          title="Xóa danh mục"
+                          className={`w-8 h-8 rounded-md transition-colors inline-flex items-center justify-center ${
+                            cat.productsCount > 0
+                              ? 'text-outline/40 cursor-not-allowed hover:bg-transparent'
+                              : 'hover:bg-error-container text-on-surface-variant hover:text-error cursor-pointer'
+                          }`}
+                          title={
+                            cat.productsCount > 0
+                              ? `Không thể xóa vì danh mục đang có ${cat.productsCount} sản phẩm liên kết`
+                              : 'Xóa danh mục'
+                          }
                           aria-label="Xóa danh mục"
                         >
-                          <span className="material-symbols-outlined text-[16px]">
+                          <span className="material-symbols-outlined text-[17px]">
                             delete
                           </span>
                         </button>
@@ -490,21 +405,21 @@ export const AdminCategoriesPage = () => {
           </table>
         </div>
 
-        {/* Chân Bảng: Thống Kê & Phân Trang */}
-        <div className="px-6 py-4 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-label text-on-surface-variant border-t border-outline-variant/30">
+        {/* Chân Bảng: Thống Kê & Phân Trang Chuẩn */}
+        <div className="px-5 py-3.5 bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-on-surface-variant border-t border-outline-variant/30">
           <div className="flex items-center gap-2">
             <span>
-              Hiển thị <strong>{filteredCategories.length}</strong> /{' '}
-              {categories.length} danh mục tác phẩm
+              Hiển thị <strong className="text-on-surface font-semibold">{filteredCategories.length}</strong> trên{' '}
+              <strong className="text-on-surface font-semibold">{categories.length}</strong> danh mục tác phẩm
             </span>
             <span className="text-outline-variant">•</span>
             <span>
-              Tổng <strong>{stats.totalProducts}</strong> tác phẩm gốm
+              Tổng <strong className="text-primary font-semibold">{stats.totalProducts}</strong> tác phẩm phân loại
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="px-3 py-1 rounded bg-surface-container-lowest text-on-surface font-semibold shadow-xs">
-              Trang 1
+          <div className="flex items-center gap-1 text-xs">
+            <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface font-medium border border-outline-variant/30">
+              Trang 1 / 1
             </span>
           </div>
         </div>
@@ -522,7 +437,7 @@ export const AdminCategoriesPage = () => {
           />
 
           {/* Khung Form Modal Trung Tâm */}
-          <div className="relative w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-2xl p-6 sm:p-8 border border-outline-variant/40 z-10 animate-scaleUp">
+          <div className="relative w-full max-w-lg bg-surface-container-lowest rounded-lg shadow-2xl p-6 sm:p-7 border border-outline-variant/50 z-10 animate-scaleUp">
             {/* Header Modal */}
             <div className="flex items-start justify-between pb-4 border-b border-outline-variant/30">
               <div className="flex flex-col">
@@ -531,7 +446,7 @@ export const AdminCategoriesPage = () => {
                     ? 'Thêm Mới Danh Mục'
                     : 'Biên Tập & Thiết Lập'}
                 </span>
-                <h2 className="font-headline text-2xl font-bold text-on-surface mt-1">
+                <h2 className="font-headline text-xl font-bold text-on-surface mt-0.5">
                   {modalMode === 'create'
                     ? 'Tạo Danh Mục Tác Phẩm'
                     : 'Chỉnh Sửa Danh Mục'}
@@ -540,7 +455,7 @@ export const AdminCategoriesPage = () => {
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-md flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
                 title="Đóng cửa sổ"
               >
                 <span className="material-symbols-outlined text-[20px]">
@@ -550,7 +465,7 @@ export const AdminCategoriesPage = () => {
             </div>
 
             {/* Nội Dung Form */}
-            <form onSubmit={handleSubmitForm} className="space-y-5 pt-4">
+            <form onSubmit={handleSubmitForm} className="space-y-4 pt-4">
               {/* Tên Danh Mục */}
               <div>
                 <label className="block font-label text-[11px] text-on-surface-variant uppercase tracking-wider mb-1.5 font-semibold">
@@ -565,7 +480,7 @@ export const AdminCategoriesPage = () => {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="VD: Ấm Chén Trà Đạo"
-                  className="w-full bg-surface-container-low px-3.5 py-2.5 rounded-lg text-on-surface text-xs font-medium focus:outline-none focus:bg-surface-container focus:ring-1 focus:ring-primary transition-colors border border-outline-variant/30"
+                  className="w-full bg-surface-container-low px-3.5 py-2.5 rounded-md text-on-surface text-xs font-medium focus:outline-none focus:bg-surface-container focus:border-primary transition-colors border border-outline-variant/60"
                 />
               </div>
 
@@ -575,13 +490,13 @@ export const AdminCategoriesPage = () => {
                   Mô Tả Danh Mục
                 </label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
                   placeholder="Mô tả chất liệu men tro, đất nung, nhiệt độ hoặc phong cách tạo tác..."
-                  className="w-full bg-surface-container-low p-3.5 rounded-lg text-on-surface text-xs focus:outline-none focus:bg-surface-container focus:ring-1 focus:ring-primary resize-none leading-relaxed border border-outline-variant/30"
+                  className="w-full bg-surface-container-low p-3 rounded-md text-on-surface text-xs focus:outline-none focus:bg-surface-container focus:border-primary resize-none leading-relaxed border border-outline-variant/60"
                 />
               </div>
 
@@ -590,14 +505,14 @@ export const AdminCategoriesPage = () => {
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-5 py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-label font-medium transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-md bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-label font-medium transition-colors cursor-pointer"
                 >
                   Hủy Bỏ
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 rounded-lg bg-primary hover:bg-[#a8531e] text-on-primary text-xs font-label font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-md bg-primary hover:bg-[#a8531e] text-on-primary text-xs font-label font-semibold shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     check
@@ -617,7 +532,7 @@ export const AdminCategoriesPage = () => {
       )}
 
       {/* ========================================================= */}
-      {/* 6. MODAL XÁC NHẬN XÓA (DELETE CONFIRM DIALOG) */}
+      {/* 6. MODAL XÁC NHẬN XÓA (DELETE CONFIRM DIALOG - CÓ RÀNG BUỘC) */}
       {/* ========================================================= */}
       {deleteConfirmItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -626,47 +541,57 @@ export const AdminCategoriesPage = () => {
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fadeIn"
           />
 
-          <div className="relative w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-2xl p-6 border border-outline-variant/40 z-10 animate-scaleUp">
+          <div className="relative w-full max-w-md bg-surface-container-lowest rounded-lg shadow-2xl p-6 border border-outline-variant/50 z-10 animate-scaleUp">
             <div className="flex items-center gap-3 text-error mb-3">
-              <div className="w-10 h-10 rounded-full bg-error-container flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-2xl text-error">
+              <div className="w-9 h-9 rounded-md bg-error-container flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[20px] text-error">
                   warning
                 </span>
               </div>
-              <h3 className="font-headline text-lg font-bold text-on-surface">
-                Xác Nhận Xóa Danh Mục
+              <h3 className="font-headline text-base font-bold text-on-surface">
+                {deleteConfirmItem.productsCount > 0
+                  ? 'Không Thể Xóa Danh Mục Này'
+                  : 'Xác Nhận Xóa Danh Mục'}
               </h3>
             </div>
 
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              Quý khách có chắc chắn muốn xóa danh mục{' '}
-              <strong className="text-on-surface font-semibold">
-                "{deleteConfirmItem.name}"
-              </strong>{' '}
-              không?
-              {deleteConfirmItem.productsCount > 0 && (
-                <span className="block mt-2 text-error font-medium">
-                  ⚠️ Cảnh báo: Danh mục này hiện đang liên kết với{' '}
-                  {deleteConfirmItem.productsCount} tác phẩm trong kho!
-                </span>
-              )}
-            </p>
+            {deleteConfirmItem.productsCount > 0 ? (
+              <div className="space-y-3">
+                <p className="text-xs text-error font-medium leading-relaxed bg-error/10 p-3 rounded-md border border-error/20">
+                  Danh mục <strong>"{deleteConfirmItem.name}"</strong> hiện đang liên kết với{' '}
+                  <strong>{deleteConfirmItem.productsCount} tác phẩm</strong> trong kho gốm.
+                </p>
+                <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                  Để bảo vệ toàn vẹn dữ liệu đơn hàng và hiển thị, hệ thống không cho phép xóa danh mục đang có sản phẩm. Vui lòng chuyển các sản phẩm sang danh mục khác trước khi xóa.
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                Quý khách có chắc chắn muốn xóa danh mục{' '}
+                <strong className="text-on-surface font-semibold">
+                  "{deleteConfirmItem.name}"
+                </strong>{' '}
+                (0 tác phẩm) không? Thao tác này sẽ xóa vĩnh viễn danh mục khỏi cơ sở dữ liệu.
+              </p>
+            )}
 
-            <div className="pt-5 flex items-center justify-end gap-3">
+            <div className="pt-5 flex items-center justify-end gap-3 border-t border-outline-variant/20 mt-4">
               <button
                 type="button"
                 onClick={() => setDeleteConfirmItem(null)}
-                className="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-label font-medium transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-md bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-label font-medium transition-colors cursor-pointer"
               >
-                Hủy Bỏ
+                {deleteConfirmItem.productsCount > 0 ? 'Đã Hiểu' : 'Hủy Bỏ'}
               </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                className="px-5 py-2 rounded-lg bg-error hover:bg-[#a82d22] text-white text-xs font-label font-semibold shadow-sm transition-all cursor-pointer"
-              >
-                Xác Nhận Xóa
-              </button>
+              {deleteConfirmItem.productsCount === 0 && (
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  className="px-5 py-2 rounded-md bg-error hover:bg-[#a82d22] text-white text-xs font-label font-semibold shadow-xs transition-all cursor-pointer"
+                >
+                  Xác Nhận Xóa
+                </button>
+              )}
             </div>
           </div>
         </div>

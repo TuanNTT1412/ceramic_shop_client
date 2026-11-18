@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { AdminFilterProvider } from '../../context';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 
@@ -20,32 +21,34 @@ export const AdminLayout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background font-body text-on-background selection:bg-primary/20 selection:text-primary">
-      {/* 1. Admin Sidebar */}
-      <AdminSidebar
-        isCollapsed={isCollapsed}
-        isMobileOpen={isMobileOpen}
-        onCloseMobile={handleCloseMobile}
-      />
+    <AdminFilterProvider>
+      <div className="min-h-screen bg-background font-body text-on-background selection:bg-primary/20 selection:text-primary">
+        {/* 1. Admin Sidebar */}
+        <AdminSidebar
+          isCollapsed={isCollapsed}
+          isMobileOpen={isMobileOpen}
+          onCloseMobile={handleCloseMobile}
+        />
 
-      {/* 2. Admin Header */}
-      <AdminHeader
-        isCollapsed={isCollapsed}
-        onToggleCollapse={handleToggleCollapse}
-        onOpenMobile={handleOpenMobile}
-      />
+        {/* 2. Admin Header */}
+        <AdminHeader
+          isCollapsed={isCollapsed}
+          onToggleCollapse={handleToggleCollapse}
+          onOpenMobile={handleOpenMobile}
+        />
 
-      {/* 3. Main Content Workspace */}
-      <div
-        className={`transition-all duration-300 min-h-screen pt-16 ${
-          isCollapsed ? 'pl-0 lg:pl-20' : 'pl-0 lg:pl-64'
-        }`}
-      >
-        <main className="w-full min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">
-          {children || <Outlet />}
-        </main>
+        {/* 3. Main Content Workspace */}
+        <div
+          className={`transition-all duration-300 min-h-screen pt-16 ${
+            isCollapsed ? 'pl-0 lg:pl-20' : 'pl-0 lg:pl-64'
+          }`}
+        >
+          <main className="w-full min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">
+            {children || <Outlet />}
+          </main>
+        </div>
       </div>
-    </div>
+    </AdminFilterProvider>
   );
 };
 

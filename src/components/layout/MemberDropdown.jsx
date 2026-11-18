@@ -35,7 +35,9 @@ export const MemberDropdown = () => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 text-xs font-medium ${
+        className={`flex items-center gap-1.5 ${
+          isAuthenticated ? 'px-3' : 'px-2'
+        } py-1.5 rounded-full border transition-all duration-200 text-xs font-medium ${
           isOpen
             ? 'border-[#c2652a] bg-[#faefe4] text-[#c2652a] shadow-sm'
             : 'border-[#ded0c0] bg-white text-[#26201b] hover:border-[#c2652a]/50 hover:bg-[#faf6f0]'
@@ -52,9 +54,11 @@ export const MemberDropdown = () => {
             />
           </svg>
         </div>
-        <span className="font-sans font-medium max-w-[85px] truncate">
-          {isAuthenticated ? user?.name || 'Hội Viên' : 'Hội Viên'}
-        </span>
+        {isAuthenticated && (
+          <span className="font-sans font-medium max-w-[85px] truncate">
+            {user?.name || 'Hội Viên'}
+          </span>
+        )}
         <svg
           className={`w-3.5 h-3.5 text-[#8a705b] transition-transform duration-200 ${
             isOpen ? 'rotate-180 text-[#c2652a]' : ''
@@ -100,26 +104,28 @@ export const MemberDropdown = () => {
               </Link>
             )}
 
-            {/* Mục 1: Quản lý hồ sơ cá nhân */}
-            <Link
-              to={ROUTES.PROFILE}
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-[#f0e5d8] group-hover:bg-[#faefe4] flex items-center justify-center text-[#735e4d] group-hover:text-[#c2652a] transition-colors shrink-0">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <span className="font-semibold text-xs text-[#26201b] group-hover:text-[#c2652a] transition-colors">
-                Quản Lý Hồ Sơ Cá Nhân
-              </span>
-            </Link>
+            {/* Mục 1: Quản lý hồ sơ cá nhân (chỉ hiển thị khi đã đăng nhập) */}
+            {isAuthenticated && (
+              <Link
+                to={ROUTES.PROFILE}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#26201b] hover:bg-white hover:text-[#c2652a] transition-colors group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#f0e5d8] group-hover:bg-[#faefe4] flex items-center justify-center text-[#735e4d] group-hover:text-[#c2652a] transition-colors shrink-0">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.8"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+                <span className="font-semibold text-xs text-[#26201b] group-hover:text-[#c2652a] transition-colors">
+                  Quản Lý Hồ Sơ Cá Nhân
+                </span>
+              </Link>
+            )}
 
             {/* Mục 2: Cổng Quản Trị Xưởng Gốm (Chỉ hiển thị khi tài khoản có quyền ADMIN) */}
             {isAdmin && (

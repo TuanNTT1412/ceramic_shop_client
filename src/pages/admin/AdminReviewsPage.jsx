@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { reviewApi } from '../../api';
-import { useToast } from '../../context';
+import { useToast, useAdminFilter } from '../../context';
+import { AdminButton } from '../../components/layout';
 import { formatDate } from '../../utils/format';
 
 // ============================================================================
@@ -129,11 +130,25 @@ export const AdminReviewsPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Bộ lọc tìm kiếm & Số sao & Trạng thái & Có ảnh
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStar, setSelectedStar] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [onlyPhotos, setOnlyPhotos] = useState(false);
+  // Bộ lọc tìm kiếm & Số sao & Trạng thái & Có ảnh từ AdminFilterContext
+  const {
+    searchQuery = '',
+    setSearchQuery,
+    reviewFilters,
+    setReviewFilters,
+  } = useAdminFilter();
+
+  const selectedStar = reviewFilters?.star || 'all';
+  const selectedStatus = reviewFilters?.status || 'all';
+  const onlyPhotos = Boolean(reviewFilters?.onlyPhotos);
+
+  const setSelectedStar = (val) => setReviewFilters((prev) => ({ ...prev, star: val }));
+  const setSelectedStatus = (val) => setReviewFilters((prev) => ({ ...prev, status: val }));
+  const setOnlyPhotos = (updater) =>
+    setReviewFilters((prev) => ({
+      ...prev,
+      onlyPhotos: typeof updater === 'function' ? updater(prev.onlyPhotos) : updater,
+    }));
 
   // Modal Phản hồi của Nghệ nhân
   const [selectedReviewForReply, setSelectedReviewForReply] = useState(null);
@@ -242,12 +257,15 @@ export const AdminReviewsPage = () => {
       if (selectedStar === '5') matchStar = item.rating === 5;
       else if (selectedStar === '4') matchStar = item.rating === 4;
       else if (selectedStar === '3') matchStar = item.rating === 3;
+      else if (selectedStar === '2') matchStar = item.rating === 2;
+      else if (selectedStar === '1') matchStar = item.rating === 1;
       else if (selectedStar === '1-2') matchStar = item.rating <= 2;
 
       // 3. Lọc trạng thái phản hồi
       let matchStatus = true;
       if (selectedStatus === 'pending') matchStatus = !item.adminReply;
       else if (selectedStatus === 'replied') matchStatus = Boolean(item.adminReply);
+      else if (selectedStatus === 'hidden') matchStatus = Boolean(item.isHidden);
 
       // 4. Lọc chỉ có ảnh
       let matchPhoto = true;
@@ -257,11 +275,27 @@ export const AdminReviewsPage = () => {
     });
   }, [reviews, searchQuery, selectedStar, selectedStatus, onlyPhotos]);
 
+  // Phân trang đánh giá chuẩn Master Table
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / itemsPerPage));
+  const paginatedReviews = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredReviews.slice(start, start + itemsPerPage);
+  }, [filteredReviews, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedStar, selectedStatus, onlyPhotos]);
+
   const handleResetFilters = () => {
-    setSearchQuery('');
-    setSelectedStar('all');
-    setSelectedStatus('all');
-    setOnlyPhotos(false);
+    if (setSearchQuery) setSearchQuery('');
+    setReviewFilters({
+      star: 'all',
+      status: 'all',
+      onlyPhotos: false,
+    });
+    setCurrentPage(1);
     toast.info('Đã đặt lại tất cả bộ lọc đánh giá.');
   };
 
@@ -404,463 +438,291 @@ export const AdminReviewsPage = () => {
   };
 
   return (
-    <div className="flex flex-col w-full pb-16 font-body text-on-background animate-fadeIn space-y-8">
+    <div className="flex flex-col w-full pb-16 font-body text-on-background animate-fadeIn">
       {/* ========================================================= */}
       {/* 1. BREADCRUMB & PAGE HEADER                              */}
       {/* ========================================================= */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 pt-2">
-        <div className="flex flex-col gap-1.5">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs font-medium text-secondary">
-            <span className="hover:text-on-surface cursor-pointer transition-colors">
-              Quản Trị Xưởng
-            </span>
-            <span className="material-symbols-outlined text-[13px] text-outline">
-              chevron_right
-            </span>
-            <span className="text-primary font-semibold">
-              Quản Lý Đánh Giá &amp; Lời Thẩm Định
-            </span>
-          </nav>
-
-          {/* Title & Narrative Subtitle */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-2 pb-8 border-b border-outline-variant/30">
+        <div>
           <h1 className="text-3xl lg:text-4xl font-headline font-bold text-on-surface tracking-tight">
-            Quản Lý Đánh Giá &amp; Lời Thẩm Định Gốm
+            Quản Lý Đánh Giá &amp; Thẩm Định
           </h1>
-          <p className="text-xs md:text-sm text-on-surface-variant max-w-2xl font-light">
-            Lắng nghe cảm nhận mộc mạc của trà hữu, kiểm duyệt hình ảnh nung thực tế và gửi lời tri ân,
-            hồi đáp từ nghệ nhân xưởng nung Sahara.
+          <p className="max-w-2xl text-xs md:text-sm text-on-surface-variant font-body mt-1 leading-relaxed">
+            Lắng nghe cảm nhận của trà hữu, kiểm duyệt hình ảnh thực tế và gửi lời tri ân từ xưởng nung Bát Tràng.
           </p>
         </div>
 
         {/* Right Quick Actions */}
-        <div className="flex items-center gap-3">
-          <button
+        <div className="flex items-center gap-3 shrink-0">
+          <AdminButton
+            variant="secondary"
+            icon="file_download"
             onClick={handleExportExcel}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-on-surface bg-surface-container-lowest hover:bg-surface-container transition-all rounded-lg shadow-sm border border-outline-variant/30"
             title="Xuất file báo cáo Excel/CSV"
           >
-            <span className="material-symbols-outlined text-[18px] text-secondary">download</span>
-            <span>Xuất Excel</span>
-          </button>
-          <button
-            onClick={() => setOnlyPhotos((prev) => !prev)}
-            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all border ${
-              onlyPhotos
-                ? 'bg-primary text-on-primary border-primary shadow-sm'
-                : 'text-primary bg-primary/10 hover:bg-primary/15 border-primary/20'
-            }`}
-            title="Chỉ xem các đánh giá có ảnh chụp mở hộp"
-          >
-            <span className="material-symbols-outlined text-[18px]">photo_library</span>
-            <span>{onlyPhotos ? 'Đang lọc có ảnh' : 'Lọc Đánh Giá Có Ảnh'}</span>
-          </button>
+            Xuất Excel
+          </AdminButton>
         </div>
-      </section>
+      </div>
 
       {/* ========================================================= */}
-      {/* 2. 4 BENTO KPI METRICS SUMMARY                            */}
+      {/* 4. REVIEWS MASTER DATA TABLE (ĐỒNG BỘ 100% QUY CHUẨN TABLE)*/}
       {/* ========================================================= */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {/* Card 1: Score & Breakdown */}
-        <div className="bg-surface-container-low rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-wider text-secondary">
-              Điểm Đánh Giá Trung Bình
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline gap-3">
-            <span className="text-4xl font-sans font-bold text-on-surface tracking-tight">
-              {metrics.avgScore}
-            </span>
-            <div className="flex text-amber-500">
-              <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                star
-              </span>
-              <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                star
-              </span>
-              <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                star
-              </span>
-              <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                star
-              </span>
-              <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                star_half
-              </span>
-            </div>
-          </div>
-          {/* Mini Rating Bars */}
-          <div className="mt-4 space-y-1.5 text-[11px] text-on-surface-variant font-medium">
-            <div className="flex items-center gap-2">
-              <span className="w-4">5★</span>
-              <div className="flex-1 h-1.5 bg-surface-variant rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: `${metrics.fiveStarPercent}%` }}></div>
-              </div>
-              <span className="w-8 text-right font-mono text-[10px]">{metrics.fiveStarPercent}%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4">4★</span>
-              <div className="flex-1 h-1.5 bg-surface-variant rounded-full overflow-hidden">
-                <div className="h-full bg-primary/60 rounded-full" style={{ width: `${metrics.fourStarPercent}%` }}></div>
-              </div>
-              <span className="w-8 text-right font-mono text-[10px]">{metrics.fourStarPercent}%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4">3★-</span>
-              <div className="flex-1 h-1.5 bg-surface-variant rounded-full overflow-hidden">
-                <div className="h-full bg-outline rounded-full" style={{ width: `${metrics.lowStarPercent}%` }}></div>
-              </div>
-              <span className="w-8 text-right font-mono text-[10px]">{metrics.lowStarPercent}%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Total Reviews */}
-        <div className="bg-surface-container-low rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-wider text-secondary">
-              Tổng Lời Thẩm Định
-            </span>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-sans font-bold text-on-surface">
-                {metrics.totalCount}
-              </span>
-              <span className="text-xs text-on-surface-variant font-normal">lượt</span>
-            </div>
-            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              <span>+32 tháng này</span>
-            </div>
-          </div>
-          <p className="mt-4 text-[11px] text-on-surface-variant font-light">
-            Đồng bộ 100% từ đơn giao thành công
-          </p>
-        </div>
-
-        {/* Card 3: Photo Reviews */}
-        <div className="bg-surface-container-low rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-wider text-secondary">
-              Đánh Giá Kèm Ảnh Thực Tế
-            </span>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-sans font-bold text-on-surface">
-                {metrics.photoReviewsCount}
-              </span>
-              <span className="text-xs text-on-surface-variant font-normal">ảnh chụp</span>
-            </div>
-            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-              <span>Chiếm {metrics.photoReviewsPercent}% thẩm định</span>
-            </div>
-          </div>
-          <p className="mt-4 text-[11px] text-on-surface-variant font-light">
-            Hình ảnh mở hộp sa mộc &amp; thưởng trà tại gia của khách.
-          </p>
-        </div>
-
-        {/* Card 4: Pending Replies */}
-        <div className="bg-surface-container-low rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col justify-between relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-secondary">
-              Chờ Xưởng Phản Hồi
-            </span>
-            <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></div>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-sans font-bold text-primary">
-                {metrics.pendingRepliesCount}
-              </span>
-              <span className="text-xs text-primary font-medium">chờ nghệ nhân</span>
-            </div>
-            <p className="mt-2 text-xs text-on-surface-variant font-light">
-              Cần phản hồi trong vòng 24 giờ để gìn giữ sự thấu hiểu với trà hữu.
-            </p>
-          </div>
-          <button
-            onClick={handleScrollToPending}
-            className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-on-primary-fixed-variant transition-colors"
-          >
-            <span>Xử lý ngay danh sách chờ</span>
-            <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
-          </button>
-        </div>
-      </section>
-
-      {/* ========================================================= */}
-      {/* 3. TOOLBAR FILTERS (TÌM KIẾM, SỐ SAO, TRẠNG THÁI)         */}
-      {/* ========================================================= */}
-      <section
-        ref={pendingSectionRef}
-        className="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant/30 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3"
-      >
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-secondary pointer-events-none">
-            search
-          </span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm theo tên khách, nội dung đánh giá, tác phẩm gốm..."
-            className="w-full pl-9 pr-3 py-2 text-xs bg-surface-container-low rounded-lg text-on-surface placeholder:text-outline outline-none focus:ring-1 focus:ring-primary/40 transition-all border border-outline-variant/30 font-body"
-          />
-        </div>
-
-        {/* Filter Selects & Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Star Rating Dropdown */}
-          <div className="relative min-w-[140px]">
-            <select
-              value={selectedStar}
-              onChange={(e) => setSelectedStar(e.target.value)}
-              className="w-full text-xs bg-surface-container-low rounded-lg py-2 pl-3 pr-8 text-on-surface outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer appearance-none border border-outline-variant/30 font-body"
-            >
-              <option value="all">Tất cả số sao</option>
-              <option value="5">5 sao (Xuất sắc)</option>
-              <option value="4">4 sao (Rất tốt)</option>
-              <option value="3">3 sao (Bình thường)</option>
-              <option value="1-2">1-2 sao (Cần cải thiện)</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[16px] text-secondary">
-              expand_more
-            </span>
-          </div>
-
-          {/* Reply Status Dropdown */}
-          <div className="relative min-w-[150px]">
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full text-xs bg-surface-container-low rounded-lg py-2 pl-3 pr-8 text-on-surface outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer appearance-none border border-outline-variant/30 font-body"
-            >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="pending">Chưa phản hồi (Pending)</option>
-              <option value="replied">Đã phản hồi (Replied)</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[16px] text-secondary">
-              expand_more
-            </span>
-          </div>
-
-          {/* Photo Toggle Checkbox Button */}
-          <label className="inline-flex items-center gap-2 px-3 py-2 bg-surface-container-low hover:bg-surface-container cursor-pointer rounded-lg text-xs text-on-surface transition-colors select-none border border-outline-variant/30">
-            <input
-              type="checkbox"
-              checked={onlyPhotos}
-              onChange={(e) => setOnlyPhotos(e.target.checked)}
-              className="w-4 h-4 rounded text-primary focus:ring-0 focus:ring-offset-0 bg-surface-container-lowest"
-            />
-            <span className="font-medium">Chỉ xem có ảnh chụp</span>
-          </label>
-
-          {/* Refresh Button */}
-          <button
-            onClick={handleResetFilters}
-            className="p-2 text-secondary hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors border border-outline-variant/30"
-            title="Làm mới bộ lọc"
-          >
-            <span className={`material-symbols-outlined text-[19px] ${isRefreshing ? 'animate-spin text-primary' : ''}`}>
-              refresh
-            </span>
-          </button>
-        </div>
-      </section>
-
-      {/* ========================================================= */}
-      {/* 4. REVIEW STREAM / CARDS (FULL WIDTH ĐẾN SÁT BÊN PHẢI)    */}
-      {/* ========================================================= */}
-      <section className="flex flex-col space-y-6 w-full">
-        {filteredReviews.length === 0 ? (
-          <div className="bg-surface-container-lowest rounded-2xl p-12 text-center border border-dashed border-outline-variant/60 flex flex-col items-center gap-3">
-            <span className="material-symbols-outlined text-4xl text-outline">search_off</span>
-            <h3 className="font-headline text-lg font-bold text-on-surface">
-              Không tìm thấy lời thẩm định phù hợp
-            </h3>
-            <p className="text-xs text-on-surface-variant max-w-md">
-              Vui lòng điều chỉnh lại từ khóa hoặc các bộ lọc số sao phía trên.
-            </p>
-            <button
-              onClick={handleResetFilters}
-              className="mt-2 text-xs text-primary font-semibold hover:underline"
-            >
-              Khôi phục toàn bộ danh sách
-            </button>
-          </div>
-        ) : (
-          filteredReviews.map((review) => {
-            const hasPhotos = review.images && review.images.length > 0;
-            const isReplied = Boolean(review.adminReply);
-
-            return (
-              <article
-                key={review.id}
-                className={`bg-surface-container-lowest rounded-2xl p-6 lg:p-7 shadow-sm border border-outline-variant/30 transition-all hover:shadow-md ${
-                  review.isHidden ? 'opacity-40' : ''
-                }`}
-              >
-                <div className="flex flex-col lg:flex-row items-start justify-between gap-5">
-                  {/* User Info & Ceramic Art Piece Meta */}
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm tracking-wider flex-shrink-0 border border-primary/20">
-                      {review.customerInitials}
+      <div ref={pendingSectionRef} className="w-full bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-xs overflow-hidden mt-8">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left text-xs font-body">
+            <thead className="bg-surface-container-low text-on-surface-variant font-label uppercase tracking-wider text-[11px] border-b border-outline-variant/30 select-none">
+              <tr>
+                <th className="py-3.5 px-4 font-semibold min-w-[190px]">Khách Hàng &amp; Đơn</th>
+                <th className="py-3.5 px-4 font-semibold min-w-[200px]">Tác Phẩm Thẩm Định</th>
+                <th className="py-3.5 px-3 font-semibold w-28 text-center">Đánh Giá</th>
+                <th className="py-3.5 px-4 font-semibold min-w-[260px]">Lời Nhận Xét &amp; Ảnh</th>
+                <th className="py-3.5 px-3 font-semibold w-36 text-center">Phản Hồi</th>
+                <th className="py-3.5 px-3 font-semibold w-24 text-center">Hiển Thị</th>
+                <th className="py-3.5 px-4 font-semibold text-right w-24">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant/20 font-body">
+              {filteredReviews.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <span className="material-symbols-outlined text-4xl text-outline">
+                        search_off
+                      </span>
+                      <h3 className="font-headline text-base font-bold text-on-surface">
+                        Không tìm thấy lời thẩm định phù hợp
+                      </h3>
+                      <p className="text-xs text-on-surface-variant max-w-md">
+                        Vui lòng điều chỉnh lại từ khóa hoặc các bộ lọc số sao phía trên.
+                      </p>
+                      <button
+                        onClick={handleResetFilters}
+                        className="mt-2 text-xs text-primary font-semibold hover:underline cursor-pointer"
+                      >
+                        Khôi phục toàn bộ danh sách
+                      </button>
                     </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedReviews.map((review) => {
+                  const hasPhotos = review.images && review.images.length > 0;
+                  const isReplied = Boolean(review.adminReply);
 
-                    <div className="flex flex-col">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-on-surface text-sm">
-                          {review.customerName}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                          <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                          <span>Đã mua #{review.orderCode}</span>
-                        </span>
-                        <span className="text-xs text-secondary font-mono">• {review.timeAgo}</span>
-                      </div>
+                  return (
+                    <tr
+                      key={review.id}
+                      className={`hover:bg-surface-container-low/40 transition-colors group ${
+                        review.isHidden ? 'opacity-50' : ''
+                      }`}
+                    >
+                      {/* Khách hàng & Đơn */}
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
+                            {review.customerInitials}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-on-surface text-sm group-hover:text-primary transition-colors">
+                              {review.customerName}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[10px] text-on-surface-variant mt-0.5">
+                              <span className="font-mono text-emerald-700 bg-emerald-50 px-1 rounded font-medium">
+                                #{review.orderCode}
+                              </span>
+                              <span>•</span>
+                              <span>{review.timeAgo}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
 
-                      {/* Product info snippet */}
-                      <div className="mt-2.5 flex items-center gap-2.5 bg-surface-container-low px-3 py-1.5 rounded-lg max-w-fit border border-outline-variant/30">
-                        <div className="w-8 h-8 rounded-md overflow-hidden bg-surface-variant flex-shrink-0">
+                      {/* Tác phẩm */}
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2.5">
                           <img
                             src={review.productImage}
                             alt={review.productName}
-                            className="w-full h-full object-cover"
+                            className="w-10 h-10 rounded-lg object-cover border border-outline-variant/40 shrink-0"
                           />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-semibold text-on-surface truncate max-w-xs md:max-w-md">
-                            {review.productName}
-                          </span>
-                          <span className="text-[10px] text-secondary font-mono">
-                            {review.productSku}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Rating Stars & Actions */}
-                  <div className="flex items-center gap-4 self-end lg:self-start">
-                    <div className="flex items-center gap-1 text-amber-500">
-                      {Array.from({ length: 5 }).map((_, idx) => (
-                        <span
-                          key={idx}
-                          className={`material-symbols-outlined text-[18px] ${
-                            idx < review.rating ? 'text-amber-500' : 'text-outline-variant'
-                          }`}
-                          style={idx < review.rating ? { fontVariationSettings: "'FILL' 1" } : {}}
-                        >
-                          star
-                        </span>
-                      ))}
-                      <span className="text-xs font-bold text-on-surface ml-1 font-mono">
-                        {review.rating}.0
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => handleToggleHideReview(review.id)}
-                      className="text-secondary hover:text-tertiary transition-colors text-xs inline-flex items-center gap-1"
-                      title={review.isHidden ? 'Hiển thị lại trên website' : 'Ẩn khỏi website'}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">
-                        {review.isHidden ? 'visibility' : 'visibility_off'}
-                      </span>
-                      <span className="hidden sm:inline">
-                        {review.isHidden ? 'Hiện' : 'Ẩn'}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Customer Review Narrative Body */}
-                <div className="mt-4 pl-0 lg:pl-14">
-                  <p className="text-sm text-on-surface leading-relaxed italic font-serif">
-                    “{review.comment}”
-                  </p>
-
-                  {/* Customer Unboxing / Tea Session Photo Grid */}
-                  {hasPhotos && (
-                    <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
-                      {review.images.map((photoUrl, pIdx) => (
-                        <div
-                          key={pIdx}
-                          onClick={() => setActiveLightboxImage(photoUrl)}
-                          className="relative group aspect-square rounded-xl overflow-hidden bg-surface-container cursor-pointer shadow-sm border border-outline-variant/30"
-                          title="Nhấn để phóng to ảnh"
-                        >
-                          <img
-                            src={photoUrl}
-                            alt="Ảnh chụp thực tế"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined text-[20px]">zoom_in</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Artisan Atelier Response Box (Replied State) */}
-                  {isReplied ? (
-                    <div className="mt-5 bg-surface-container-low rounded-xl p-4 lg:p-5 relative overflow-hidden border border-outline-variant/30">
-                      <div className="flex items-start gap-3">
-                        <div className="w-7 h-7 rounded-lg bg-primary text-on-primary flex items-center justify-center font-headline font-bold text-xs flex-shrink-0 shadow-sm">
-                          M
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-on-surface tracking-wide">
-                              Lời nhắn từ Nghệ Nhân Xưởng Gốm Sahara
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-semibold text-xs text-on-surface truncate max-w-[190px]">
+                              {review.productName}
                             </span>
-                            <div className="flex items-center gap-3">
-                              <span className="text-[11px] text-secondary font-mono">
-                                {review.replyTimeAgo || 'Hôm nay'}
-                              </span>
-                              <button
-                                onClick={() => handleOpenReplyModal(review)}
-                                className="text-[11px] text-primary hover:underline font-semibold"
-                                title="Sửa lại nội dung phản hồi"
-                              >
-                                Sửa
-                              </button>
-                            </div>
+                            <span className="text-[10px] text-on-surface-variant font-mono truncate max-w-[190px]">
+                              {review.productSku}
+                            </span>
                           </div>
-                          <p className="text-xs text-on-surface-variant leading-relaxed font-body">
-                            {review.adminReply}
-                          </p>
                         </div>
-                      </div>
-                    </div>
-                  ) : (
-                    /* Artisan Atelier Pending Action Box (Chưa phản hồi) */
-                    <div className="mt-5 bg-surface-container-low/70 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-dashed border-primary/30">
-                      <div className="flex items-center gap-2.5 text-xs text-on-surface-variant">
-                        <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0 animate-ping"></span>
-                        <span>Chưa gửi lời hồi đáp từ nghệ nhân xưởng</span>
-                      </div>
-                      <button
-                        onClick={() => handleOpenReplyModal(review)}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-on-primary-fixed-variant text-on-primary text-xs font-semibold rounded-lg shadow-sm transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">reply</span>
-                        <span>+ Phản Hồi Từ Nghệ Nhân</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </article>
-            );
-          })
-        )}
-      </section>
+                      </td>
+
+                      {/* Số sao đánh giá */}
+                      <td className="py-4 px-3 text-center whitespace-nowrap">
+                        <div className="flex flex-col items-center justify-center gap-0.5">
+                          <div className="flex items-center text-amber-500">
+                            {Array.from({ length: 5 }).map((_, idx) => (
+                              <span
+                                key={idx}
+                                className={`material-symbols-outlined text-[15px] ${
+                                  idx < review.rating ? 'text-amber-500' : 'text-outline-variant/60'
+                                }`}
+                                style={idx < review.rating ? { fontVariationSettings: "'FILL' 1" } : {}}
+                              >
+                                star
+                              </span>
+                            ))}
+                          </div>
+                          <span className="font-bold text-[11px] text-on-surface font-mono">
+                            {review.rating}.0 / 5.0
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Lời nhận xét & ảnh nung */}
+                      <td className="py-4 px-4">
+                        <div className="flex flex-col gap-1.5 max-w-sm">
+                          <p className="text-xs text-on-surface leading-relaxed italic line-clamp-2">
+                            “{review.comment}”
+                          </p>
+                          {hasPhotos && (
+                            <div className="flex items-center gap-1.5 pt-0.5">
+                              {review.images.slice(0, 3).map((photoUrl, pIdx) => (
+                                <img
+                                  key={pIdx}
+                                  src={photoUrl}
+                                  alt="Ảnh chụp thực tế"
+                                  onClick={() => setActiveLightboxImage(photoUrl)}
+                                  className="w-7 h-7 rounded-md object-cover border border-outline-variant/40 cursor-pointer hover:opacity-80 transition-opacity"
+                                  title="Nhấn để phóng to ảnh"
+                                />
+                              ))}
+                              {review.images.length > 3 && (
+                                <span className="text-[10px] text-on-surface-variant font-medium">
+                                  +{review.images.length - 3} ảnh
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Trạng thái phản hồi xưởng */}
+                      <td className="py-4 px-3 text-center whitespace-nowrap">
+                        {isReplied ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <span className="material-symbols-outlined text-[13px]">check</span>
+                            <span>Đã hồi đáp</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                            <span className="material-symbols-outlined text-[13px]">pending</span>
+                            <span>Chờ nghệ nhân</span>
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Hiển thị / Ẩn */}
+                      <td className="py-4 px-3 text-center whitespace-nowrap">
+                        {review.isHidden ? (
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">
+                            Tạm ẩn
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-primary/10 text-primary">
+                            Công khai
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Thao tác */}
+                      <td className="py-4 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReplyModal(review)}
+                            className="w-8 h-8 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors inline-flex items-center justify-center cursor-pointer"
+                            title={isReplied ? 'Sửa lời hồi đáp nghệ nhân' : 'Gửi lời hồi đáp nghệ nhân'}
+                          >
+                            <span className="material-symbols-outlined text-[17px]">
+                              {isReplied ? 'rate_review' : 'reply'}
+                            </span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleHideReview(review.id)}
+                            className="w-8 h-8 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors inline-flex items-center justify-center cursor-pointer"
+                            title={review.isHidden ? 'Hiển thị lại trên website' : 'Ẩn khỏi website'}
+                          >
+                            <span className="material-symbols-outlined text-[17px]">
+                              {review.isHidden ? 'visibility' : 'visibility_off'}
+                            </span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Chân Bảng: Phân Trang Chuẩn Master Data Table */}
+        <div className="px-5 py-3.5 bg-surface-container-lowest border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-on-surface-variant">
+          <div>
+            Hiển thị{' '}
+            <strong className="text-on-surface font-semibold">
+              {filteredReviews.length === 0
+                ? 0
+                : `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(
+                    currentPage * itemsPerPage,
+                    filteredReviews.length
+                  )}`}
+            </strong>{' '}
+            trên <strong className="text-on-surface font-semibold">{filteredReviews.length}</strong>{' '}
+            lời thẩm định từ khách hàng
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface disabled:opacity-40 disabled:cursor-not-allowed border border-outline-variant/30 cursor-pointer"
+              title="Trang trước"
+            >
+              <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <button
+                key={pageNum}
+                type="button"
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer ${
+                  pageNum === currentPage
+                    ? 'bg-primary text-on-primary shadow-xs'
+                    : 'bg-surface-container-low hover:bg-surface-container text-on-surface border border-outline-variant/30'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface disabled:opacity-40 disabled:cursor-not-allowed border border-outline-variant/30 cursor-pointer"
+              title="Trang tiếp theo"
+            >
+              <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* ========================================================= */}
       {/* 5. ADMIN REPLY MODAL (MODAL GỬI PHẢN HỒI)                */}
