@@ -967,7 +967,7 @@ export const AdminOrdersPage = () => {
                       {/* Cột 1: Mã đơn & Ngày tạo */}
                       <td className="py-4 px-6 align-top">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-on-surface font-mono tracking-tight text-xs sm:text-sm">
+                          <span className="font-semibold text-on-surface tracking-tight text-xs sm:text-sm">
                             {order.orderCode}
                           </span>
                           <button
@@ -991,7 +991,7 @@ export const AdminOrdersPage = () => {
                         <div className="font-semibold text-on-surface">
                           {order.customer?.name || order.receiverName}
                         </div>
-                        <div className="text-[11px] text-on-surface-variant font-mono">
+                        <div className="text-[11px] text-on-surface-variant">
                           {order.customer?.email || order.receiverPhone}
                         </div>
                       </td>
@@ -1009,7 +1009,7 @@ export const AdminOrdersPage = () => {
                         </span>
 
                         {!isPickup && (
-                          <div className="mt-1.5 text-[11px] font-mono text-on-surface-variant">
+                          <div className="mt-1.5 text-[11px] text-on-surface-variant">
                             <span className="font-semibold text-on-surface">
                               {order.shippingProvider || 'Đề xuất: GHTK'}
                             </span>
@@ -1024,10 +1024,10 @@ export const AdminOrdersPage = () => {
 
                       {/* Cột 4: Tổng tiền & Thanh toán */}
                       <td className="py-4 px-4 align-top">
-                        <div className="text-sm font-headline font-bold text-on-surface">
+                        <div className="text-sm font-semibold text-on-surface">
                           {formatCurrency(order.totalAmount)}
                         </div>
-                        <div className="mt-1 flex items-center gap-1.5">
+                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                           <span
                             className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
                               isPaid
@@ -1035,10 +1035,14 @@ export const AdminOrdersPage = () => {
                                 : 'bg-amber-100 text-amber-900'
                             }`}
                           >
-                            {order.paymentStatus}
+                            {isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
                           </span>
-                          <span className="text-[10px] text-on-surface-variant font-mono bg-surface-container px-1.5 py-0.5 rounded">
-                            {order.paymentMethod}
+                          <span className="text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded">
+                            {order.paymentMethod === 'COD'
+                              ? 'Tiền mặt (COD)'
+                              : order.paymentMethod === 'PAYOS'
+                              ? 'Chuyển khoản (PayOS)'
+                              : order.paymentMethod || 'Tiền mặt'}
                           </span>
                         </div>
                         {/* Quick Toggle Payment Status */}
@@ -1047,34 +1051,33 @@ export const AdminOrdersPage = () => {
                           onClick={() => togglePaymentStatus(order)}
                           className="mt-1.5 text-[10px] text-on-surface-variant hover:text-primary transition-colors block underline decoration-dotted cursor-pointer"
                         >
-                          Đổi {isPaid ? 'UNPAID' : 'PAID'}
+                          Đổi sang {isPaid ? 'Chưa thanh toán' : 'Đã thanh toán'}
                         </button>
                       </td>
 
                       {/* Cột 5: Trạng thái đơn (OrderStatus) & Mốc thời gian */}
                       <td className="py-4 px-4 align-top">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold ${
+                          className={`inline-block px-2.5 py-1 rounded text-xs font-semibold ${
                             statusStyles[order.orderStatus] || statusStyles.PENDING
                           }`}
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                          <span>{STATUS_LABELS[order.orderStatus] || order.orderStatus}</span>
+                          {STATUS_LABELS[order.orderStatus] || order.orderStatus}
                         </span>
 
                         {/* Mốc thời gian theo trạng thái */}
                         {order.orderStatus === 'COMPLETED' && order.completedAt && (
-                          <div className="text-[11px] text-emerald-800 font-mono mt-1">
-                            Xong: {formatDate(order.completedAt)}
+                          <div className="text-[11px] text-emerald-800 mt-1">
+                            Hoàn thành: {formatDate(order.completedAt)}
                           </div>
                         )}
                         {order.orderStatus === 'CANCELED' && order.canceledAt && (
-                          <div className="text-[11px] text-error font-mono mt-1">
+                          <div className="text-[11px] text-error mt-1">
                             Hủy: {formatDate(order.canceledAt)}
                           </div>
                         )}
                         {order.orderStatus === 'SHIPPING' && order.shippedAt && (
-                          <div className="text-[11px] text-blue-800 font-mono mt-1">
+                          <div className="text-[11px] text-blue-800 mt-1">
                             Giao: {formatDate(order.shippedAt)}
                           </div>
                         )}
