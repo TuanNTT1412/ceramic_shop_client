@@ -765,74 +765,55 @@ export const AdminOrdersPage = () => {
               );
             })}
 
-            {/* Tab Gộp: Đang Giao / Chờ Nhận (Kèm Droplist) */}
+            {/* Tab Gộp: Đang Giao / Chờ Nhận (Click vào cả tab để chuyển tab và mở droplist) */}
             <div className="relative inline-flex items-center" ref={deliveryDropdownRef}>
-              <div
-                className={`status-tab px-3.5 py-3 border-b-2 transition-colors flex items-center gap-1 cursor-pointer ${
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeTab !== 'DELIVERY_PHASE') {
+                    setActiveTab('DELIVERY_PHASE');
+                    setCurrentPage(1);
+                  }
+                  setIsDeliveryDropdownOpen((prev) => !prev);
+                }}
+                className={`status-tab px-3.5 py-3 border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer outline-none select-none ${
                   activeTab === 'DELIVERY_PHASE'
                     ? 'border-primary text-primary font-semibold'
                     : 'border-transparent text-on-surface-variant hover:text-on-surface'
                 }`}
               >
-                {/* Phần chữ bấm vào lọc Mặc định: Tất cả đang giao / chờ nhận */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('DELIVERY_PHASE');
-                    setDeliveryTabSubFilter('ALL');
-                    setIsDeliveryDropdownOpen(false);
-                    setCurrentPage(1);
-                  }}
-                  className="cursor-pointer hover:underline flex items-center gap-1.5"
+                <span>
+                  {deliveryTabSubFilter === 'SHIPPING'
+                    ? 'Đang giao (Bưu tá)'
+                    : deliveryTabSubFilter === 'READY_FOR_PICKUP'
+                    ? 'Chờ tại showroom'
+                    : 'Đang giao'}
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
+                    activeTab === 'DELIVERY_PHASE'
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-surface-container text-on-surface-variant'
+                  }`}
                 >
-                  <span>
-                    {deliveryTabSubFilter === 'SHIPPING'
-                      ? 'Bưu tá đang giao'
-                      : deliveryTabSubFilter === 'READY_FOR_PICKUP'
-                      ? 'Chờ tại showroom'
-                      : 'Đang giao'}
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-                      activeTab === 'DELIVERY_PHASE'
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-surface-container text-on-surface-variant'
-                    }`}
-                  >
-                    {deliveryTabSubFilter === 'SHIPPING'
-                      ? statusTabCounts.SHIPPING
-                      : deliveryTabSubFilter === 'READY_FOR_PICKUP'
-                      ? statusTabCounts.READY_FOR_PICKUP
-                      : statusTabCounts.DELIVERY_PHASE}
-                  </span>
-                </button>
-
-                {/* Nút mũi tên mở Droplist */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsDeliveryDropdownOpen((prev) => !prev);
-                  }}
-                  className="p-1 hover:bg-surface-container rounded-md cursor-pointer text-on-surface-variant hover:text-primary transition-all flex items-center justify-center ml-0.5 outline-none border-none focus:outline-none focus:ring-0 focus-visible:outline-none"
-                  title="Chọn xem tất cả, bưu tá giao hoặc chờ nhận showroom"
+                  {deliveryTabSubFilter === 'SHIPPING'
+                    ? statusTabCounts.SHIPPING
+                    : deliveryTabSubFilter === 'READY_FOR_PICKUP'
+                    ? statusTabCounts.READY_FOR_PICKUP
+                    : statusTabCounts.DELIVERY_PHASE}
+                </span>
+                <span
+                  className={`material-symbols-outlined text-[16px] transition-transform duration-150 ${
+                    isDeliveryDropdownOpen ? 'rotate-180 text-primary' : 'text-on-surface-variant'
+                  }`}
                 >
-                  <span
-                    className={`material-symbols-outlined text-[18px] transition-transform duration-150 select-none ${
-                      isDeliveryDropdownOpen ? 'rotate-180' : ''
-                    }`}
-                  >
-                    arrow_drop_down
-                  </span>
-                </button>
-              </div>
+                  expand_more
+                </span>
+              </button>
 
-              {/* Menu Droplist */}
+              {/* Menu Droplist gọn gàng, tinh tế chuẩn Dashboard */}
               {isDeliveryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xl py-1.5 z-50 min-w-[250px] text-xs animate-in fade-in zoom-in-95 duration-100">
-                  <div className="px-3 py-1 text-[10px] uppercase font-bold text-on-surface-variant tracking-wider border-b border-outline-variant/20 mb-1">
-                    Giai đoạn giao / nhận
-                  </div>
+                <div className="absolute top-full left-0 mt-1 bg-surface-container-lowest rounded-lg border border-outline-variant/30 shadow-lg py-1 z-50 min-w-[210px] text-xs font-body animate-in fade-in zoom-in-95 duration-100">
                   <button
                     type="button"
                     onClick={() => {
@@ -841,19 +822,14 @@ export const AdminOrdersPage = () => {
                       setIsDeliveryDropdownOpen(false);
                       setCurrentPage(1);
                     }}
-                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container/60 transition-colors cursor-pointer ${
                       activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'ALL'
                         ? 'text-primary font-semibold bg-primary/5'
                         : 'text-on-surface'
                     }`}
                   >
-                    <span className="flex items-center gap-1.5">
-                      {activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'ALL' && (
-                        <span className="material-symbols-outlined text-[14px] text-primary">check</span>
-                      )}
-                      <span>Tất cả đang giao / chờ nhận</span>
-                    </span>
-                    <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
+                    <span>Tất cả đơn giao</span>
+                    <span className="font-mono text-on-surface-variant text-[11px]">
                       {statusTabCounts.DELIVERY_PHASE}
                     </span>
                   </button>
@@ -866,23 +842,19 @@ export const AdminOrdersPage = () => {
                       setIsDeliveryDropdownOpen(false);
                       setCurrentPage(1);
                     }}
-                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container/60 transition-colors cursor-pointer ${
                       activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'SHIPPING'
                         ? 'text-primary font-semibold bg-primary/5'
                         : 'text-on-surface'
                     }`}
                   >
-                    <span className="flex items-center gap-1.5">
-                      {activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'SHIPPING' ? (
-                        <span className="material-symbols-outlined text-[14px] text-primary">check</span>
-                      ) : (
-                        <span className="material-symbols-outlined text-[15px] text-primary">
-                          local_shipping
-                        </span>
-                      )}
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
+                        local_shipping
+                      </span>
                       <span>Bưu tá đang giao</span>
                     </span>
-                    <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
+                    <span className="font-mono text-on-surface-variant text-[11px]">
                       {statusTabCounts.SHIPPING}
                     </span>
                   </button>
@@ -895,23 +867,19 @@ export const AdminOrdersPage = () => {
                       setIsDeliveryDropdownOpen(false);
                       setCurrentPage(1);
                     }}
-                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container/60 transition-colors cursor-pointer ${
                       activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'READY_FOR_PICKUP'
                         ? 'text-primary font-semibold bg-primary/5'
                         : 'text-on-surface'
                     }`}
                   >
-                    <span className="flex items-center gap-1.5">
-                      {activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'READY_FOR_PICKUP' ? (
-                        <span className="material-symbols-outlined text-[14px] text-primary">check</span>
-                      ) : (
-                        <span className="material-symbols-outlined text-[15px] text-amber-700">
-                          storefront
-                        </span>
-                      )}
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
+                        storefront
+                      </span>
                       <span>Chờ nhận tại showroom</span>
                     </span>
-                    <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
+                    <span className="font-mono text-on-surface-variant text-[11px]">
                       {statusTabCounts.READY_FOR_PICKUP}
                     </span>
                   </button>
