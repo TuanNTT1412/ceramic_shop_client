@@ -264,6 +264,10 @@ export const AdminOrdersPage = () => {
             paymentStatus: o.paymentStatus || 'UNPAID',
             orderStatus: o.orderStatus || 'PENDING',
             cancelReason: o.cancelReason || null,
+            shippedAt: o.shippedAt || null,
+            completedAt: o.completedAt || null,
+            canceledAt: o.canceledAt || null,
+            updatedAt: o.updatedAt || null,
             orderDetails: (o.orderDetails || []).map((d) => ({
               id: d.id,
               productName: d.productName || 'Tác phẩm Gốm Mộc',
@@ -362,9 +366,29 @@ export const AdminOrdersPage = () => {
       result = result.filter((o) => o.paymentMethod === paymentFilter);
     }
 
-    // Sắp xếp
+    // Sắp xếp theo nghiệp vụ từng tab
     if (sortOrder === 'NEWEST') {
-      result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      if (activeTab === 'COMPLETED') {
+        result.sort(
+          (a, b) =>
+            new Date(b.completedAt || b.updatedAt || b.createdAt) -
+            new Date(a.completedAt || a.updatedAt || a.createdAt)
+        );
+      } else if (activeTab === 'CANCELED') {
+        result.sort(
+          (a, b) =>
+            new Date(b.canceledAt || b.updatedAt || b.createdAt) -
+            new Date(a.canceledAt || a.updatedAt || a.createdAt)
+        );
+      } else if (activeTab === 'SHIPPING') {
+        result.sort(
+          (a, b) =>
+            new Date(b.shippedAt || b.updatedAt || b.createdAt) -
+            new Date(a.shippedAt || a.updatedAt || a.createdAt)
+        );
+      } else {
+        result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
     } else if (sortOrder === 'OLDEST') {
       result.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     } else if (sortOrder === 'AMOUNT_DESC') {
@@ -429,6 +453,7 @@ export const AdminOrdersPage = () => {
 
   // Cập nhật trạng thái trực tiếp
   const updateOrderStatusDirect = async (orderId, newStatus) => {
+    const nowIso = new Date().toISOString();
     try {
       await orderApi.adminUpdateOrderStatus(orderId, { orderStatus: newStatus });
     } catch (e) {
@@ -436,10 +461,24 @@ export const AdminOrdersPage = () => {
     }
 
     setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, orderStatus: newStatus } : o))
+      prev.map((o) => {
+        if (o.id !== orderId) return o;
+        const updated = { ...o, orderStatus: newStatus, updatedAt: nowIso };
+        if (newStatus === 'SHIPPING' && !updated.shippedAt) updated.shippedAt = nowIso;
+        if (newStatus === 'COMPLETED' && !updated.completedAt) updated.completedAt = nowIso;
+        if (newStatus === 'CANCELED' && !updated.canceledAt) updated.canceledAt = nowIso;
+        return updated;
+      })
     );
     if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder((prev) => ({ ...prev, orderStatus: newStatus }));
+      setSelectedOrder((prev) => ({
+        ...prev,
+        orderStatus: newStatus,
+        updatedAt: nowIso,
+        ...(newStatus === 'SHIPPING' && !prev.shippedAt ? { shippedAt: nowIso } : {}),
+        ...(newStatus === 'COMPLETED' && !prev.completedAt ? { completedAt: nowIso } : {}),
+        ...(newStatus === 'CANCELED' && !prev.canceledAt ? { canceledAt: nowIso } : {}),
+      }));
     }
     toast.success(`Đã cập nhật trạng thái đơn sang ${newStatus}!`);
   };
@@ -451,6 +490,16 @@ export const AdminOrdersPage = () => {
       'PROCESSING',
       'Xác Nhận Duyệt Đơn Hàng',
       'Đơn hàng sẽ chuyển sang trạng thái "Đang chuẩn bị" để xưởng tiến hành lấy gốm và đóng gói.'
+    );
+  };
+
+  // Nút hành động nhanh: Soạn gốm xong tại xưởng -> sẵn sàng tại quầy (PROCESSING -> READY_FOR_PICKUP)
+  const readyForPickupAction = (order) => {
+    requestStatusChange(
+      order,
+      'READY_FOR_PICKUP',
+      'Xác Nhận Gốm Sẵn Sàng Tại Quầy',
+      'Đơn hàng đã được xưởng chuẩn bị xong và đặt tại quầy showroom để chờ quý khách đến nhận.'
     );
   };
 
@@ -759,10 +808,32 @@ export const AdminOrdersPage = () => {
                             </span>
                           </button>
                         </div>
-                        <div className="text-[11px] text-on-surface-variant mt-1 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px]">schedule</span>
-                          <span>{formatDate(order.createdAt)}</span>
-                        </div>
+                        {activeTab === 'COMPLETED' && order.completedAt ? (
+                          <div className="mt-1 space-y-0.5">
+                            <div className="text-[11px] text-emerald-800 font-medium flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[13px]">task_alt</span>
+                              <span>Xong: {formatDate(order.completedAt)}</span>
+                            </div>
+                            <div className="text-[10px] text-on-surface-variant font-mono opacity-70">
+                              Đặt: {formatDate(order.createdAt)}
+                            </div>
+                          </div>
+                        ) : activeTab === 'CANCELED' && order.canceledAt ? (
+                          <div className="mt-1 space-y-0.5">
+                            <div className="text-[11px] text-error font-medium flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[13px]">cancel</span>
+                              <span>Hủy: {formatDate(order.canceledAt)}</span>
+                            </div>
+                            <div className="text-[10px] text-on-surface-variant font-mono opacity-70">
+                              Đặt: {formatDate(order.createdAt)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-[11px] text-on-surface-variant mt-1 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">schedule</span>
+                            <span>{formatDate(order.createdAt)}</span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Cột 2: Khách hàng */}
@@ -884,20 +955,33 @@ export const AdminOrdersPage = () => {
                             </>
                           )}
 
-                          {/* Đơn Đang chuẩn bị (PROCESSING): Nút Bàn giao VC */}
+                          {/* Đơn Đang chuẩn bị (PROCESSING): Phân tách theo PICKUP và SHIPPING */}
                           {order.orderStatus === 'PROCESSING' && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                openFulfillmentModal(order, order.shippingProvider || 'GHTK')
-                              }
-                              className="w-8 h-8 rounded-md bg-primary hover:bg-[#a8531e] text-on-primary transition-colors inline-flex items-center justify-center cursor-pointer shadow-2xs"
-                              title="Bàn giao vận chuyển"
-                            >
-                              <span className="material-symbols-outlined text-[17px]">
-                                local_shipping
-                              </span>
-                            </button>
+                            order.deliveryType === 'PICKUP' ? (
+                              <button
+                                type="button"
+                                onClick={() => readyForPickupAction(order)}
+                                className="w-8 h-8 rounded-md bg-amber-700 hover:bg-amber-800 text-on-primary transition-colors inline-flex items-center justify-center cursor-pointer shadow-2xs"
+                                title="Đã chuẩn bị xong - Sẵn sàng tại quầy"
+                              >
+                                <span className="material-symbols-outlined text-[17px]">
+                                  storefront
+                                </span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openFulfillmentModal(order, order.shippingProvider || 'GHTK')
+                                }
+                                className="w-8 h-8 rounded-md bg-primary hover:bg-[#a8531e] text-on-primary transition-colors inline-flex items-center justify-center cursor-pointer shadow-2xs"
+                                title="Bàn giao vận chuyển"
+                              >
+                                <span className="material-symbols-outlined text-[17px]">
+                                  local_shipping
+                                </span>
+                              </button>
+                            )
                           )}
 
                           {/* Đơn Chờ nhận tại xưởng (READY_FOR_PICKUP): Nút Xác nhận giao khách */}
