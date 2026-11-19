@@ -919,10 +919,10 @@ export const AdminOrdersPage = () => {
           <table className="w-full text-left text-xs font-body table-fixed min-w-[1050px]">
             <thead className="bg-surface-container-low text-on-surface-variant font-label uppercase tracking-wider text-[11px] border-b border-outline-variant/30 select-none">
               <tr>
-                <th className="py-3.5 px-5 font-semibold w-[18%]">Mã đơn &amp; Ngày tạo</th>
-                <th className="py-3.5 px-4 font-semibold w-[22%]">Khách hàng</th>
-                <th className="py-3.5 px-4 font-semibold w-[18%]">Hình thức &amp; Đơn vị VC</th>
-                <th className="py-3.5 px-4 font-semibold w-[17%]">Tổng tiền &amp; Thanh toán</th>
+                <th className="py-3.5 px-4 sm:px-5 font-semibold w-[21%]">Mã đơn &amp; Ngày tạo</th>
+                <th className="py-3.5 px-4 font-semibold w-[21%]">Khách hàng</th>
+                <th className="py-3.5 px-4 font-semibold w-[17%]">Hình thức &amp; Đơn vị VC</th>
+                <th className="py-3.5 px-4 font-semibold w-[16%]">Tổng tiền &amp; Thanh toán</th>
                 <th className="py-3.5 px-4 font-semibold w-[15%]">Trạng thái đơn (OrderStatus)</th>
                 <th className="py-3.5 px-4 font-semibold text-center w-[10%] min-w-[110px]">Thao tác</th>
               </tr>
@@ -965,15 +965,15 @@ export const AdminOrdersPage = () => {
                       className="hover:bg-surface-container-low/40 transition-colors group"
                     >
                       {/* Cột 1: Mã đơn & Ngày tạo */}
-                      <td className="py-4 px-6 align-top">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-on-surface tracking-tight text-xs sm:text-sm">
+                      <td className="py-4 px-4 sm:px-5 align-top">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <span className="font-semibold text-on-surface tracking-tight text-xs sm:text-sm whitespace-nowrap">
                             {order.orderCode}
                           </span>
                           <button
                             type="button"
                             onClick={() => copyToClipboard(order.orderCode)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-primary cursor-pointer"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-primary cursor-pointer shrink-0"
                             title="Sao chép mã"
                           >
                             <span className="material-symbols-outlined text-[14px]">
@@ -981,7 +981,7 @@ export const AdminOrdersPage = () => {
                             </span>
                           </button>
                         </div>
-                        <div className="text-[11px] text-on-surface-variant mt-1">
+                        <div className="text-[11px] text-on-surface-variant mt-1 whitespace-nowrap">
                           {formatDate(order.createdAt)}
                         </div>
                       </td>
@@ -1027,7 +1027,7 @@ export const AdminOrdersPage = () => {
                         <div className="text-sm font-semibold text-on-surface">
                           {formatCurrency(order.totalAmount)}
                         </div>
-                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                        <div className="mt-1 flex items-center gap-1.5">
                           <span
                             className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
                               isPaid
@@ -1035,14 +1035,10 @@ export const AdminOrdersPage = () => {
                                 : 'bg-amber-100 text-amber-900'
                             }`}
                           >
-                            {isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                            {order.paymentStatus}
                           </span>
-                          <span className="text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded">
-                            {order.paymentMethod === 'COD'
-                              ? 'Tiền mặt (COD)'
-                              : order.paymentMethod === 'PAYOS'
-                              ? 'Chuyển khoản (PayOS)'
-                              : order.paymentMethod || 'Tiền mặt'}
+                          <span className="text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded font-medium">
+                            {order.paymentMethod}
                           </span>
                         </div>
                         {/* Quick Toggle Payment Status */}
@@ -1051,7 +1047,7 @@ export const AdminOrdersPage = () => {
                           onClick={() => togglePaymentStatus(order)}
                           className="mt-1.5 text-[10px] text-on-surface-variant hover:text-primary transition-colors block underline decoration-dotted cursor-pointer"
                         >
-                          Đổi sang {isPaid ? 'Chưa thanh toán' : 'Đã thanh toán'}
+                          Đổi {isPaid ? 'UNPAID' : 'PAID'}
                         </button>
                       </td>
 
