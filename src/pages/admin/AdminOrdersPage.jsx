@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { orderApi } from '../../api';
 import { useToast, useAdminFilter } from '../../context';
 import { AdminButton } from '../../components/layout';
@@ -174,6 +174,22 @@ export const AdminOrdersPage = () => {
 
   // Bộ lọc
   const [activeTab, setActiveTab] = useState('ALL');
+  const [deliveryTabSubFilter, setDeliveryTabSubFilter] = useState('ALL'); // 'ALL' | 'SHIPPING' | 'READY_FOR_PICKUP'
+  const [isDeliveryDropdownOpen, setIsDeliveryDropdownOpen] = useState(false);
+  const deliveryDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        deliveryDropdownRef.current &&
+        !deliveryDropdownRef.current.contains(e.target)
+      ) {
+        setIsDeliveryDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const {
     searchQuery,
     orderFilters,
@@ -321,12 +337,15 @@ export const AdminOrdersPage = () => {
 
   // Bộ đếm số lượng cho từng Tab Status
   const statusTabCounts = useMemo(() => {
+    const shippingCount = orders.filter((o) => o.orderStatus === 'SHIPPING').length;
+    const pickupCount = orders.filter((o) => o.orderStatus === 'READY_FOR_PICKUP').length;
     return {
       ALL: orders.length,
       PENDING: orders.filter((o) => o.orderStatus === 'PENDING').length,
       PROCESSING: orders.filter((o) => o.orderStatus === 'PROCESSING').length,
-      SHIPPING: orders.filter((o) => o.orderStatus === 'SHIPPING').length,
-      READY_FOR_PICKUP: orders.filter((o) => o.orderStatus === 'READY_FOR_PICKUP').length,
+      DELIVERY_PHASE: shippingCount + pickupCount,
+      SHIPPING: shippingCount,
+      READY_FOR_PICKUP: pickupCount,
       COMPLETED: orders.filter((o) => o.orderStatus === 'COMPLETED').length,
       CANCELED: orders.filter((o) => o.orderStatus === 'CANCELED').length,
     };
@@ -337,7 +356,17 @@ export const AdminOrdersPage = () => {
     let result = [...orders];
 
     // Lọc theo Tab Status
-    if (activeTab !== 'ALL') {
+    if (activeTab === 'DELIVERY_PHASE') {
+      if (deliveryTabSubFilter === 'SHIPPING') {
+        result = result.filter((o) => o.orderStatus === 'SHIPPING');
+      } else if (deliveryTabSubFilter === 'READY_FOR_PICKUP') {
+        result = result.filter((o) => o.orderStatus === 'READY_FOR_PICKUP');
+      } else {
+        result = result.filter(
+          (o) => o.orderStatus === 'SHIPPING' || o.orderStatus === 'READY_FOR_PICKUP'
+        );
+      }
+    } else if (activeTab !== 'ALL') {
       result = result.filter((o) => o.orderStatus === activeTab);
     }
 
@@ -380,7 +409,7 @@ export const AdminOrdersPage = () => {
             new Date(b.canceledAt || b.updatedAt || b.createdAt) -
             new Date(a.canceledAt || a.updatedAt || a.createdAt)
         );
-      } else if (activeTab === 'SHIPPING') {
+      } else if (activeTab === 'DELIVERY_PHASE' || activeTab === 'SHIPPING') {
         result.sort(
           (a, b) =>
             new Date(b.shippedAt || b.updatedAt || b.createdAt) -
@@ -396,7 +425,7 @@ export const AdminOrdersPage = () => {
     }
 
     return result;
-  }, [orders, activeTab, searchQuery, deliveryFilter, paymentFilter, sortOrder]);
+  }, [orders, activeTab, deliveryTabSubFilter, searchQuery, deliveryFilter, paymentFilter, sortOrder]);
 
   // Phân trang
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
@@ -700,12 +729,185 @@ export const AdminOrdersPage = () => {
         {/* OrderStatus Tabs Bar */}
         <div className="px-6 pt-4 border-b border-outline-variant/30 flex items-center justify-between gap-4 overflow-x-auto scrollbar-none">
           <div className="flex items-center space-x-1 sm:space-x-2 text-sm font-medium whitespace-nowrap min-w-max">
+            {/* Nhóm Tab ban đầu: Tất cả, Chờ xác nhận, Đang chuẩn bị */}
             {[
               { key: 'ALL', label: 'Tất cả' },
               { key: 'PENDING', label: 'Chờ xác nhận' },
               { key: 'PROCESSING', label: 'Đang chuẩn bị' },
-              { key: 'SHIPPING', label: 'Đang giao' },
-              { key: 'READY_FOR_PICKUP', label: 'Chờ nhận tại showroom' },
+            ].map((tab) => {
+              const isActive = activeTab === tab.key;
+              const count = statusTabCounts[tab.key] || 0;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(tab.key);
+                    setCurrentPage(1);
+                  }}
+                  className={`status-tab px-3.5 py-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+                    isActive
+                      ? 'border-primary text-primary font-semibold'
+                      : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-surface-container text-on-surface-variant'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* Tab Gộp: Đang Giao / Chờ Nhận (Kèm Droplist) */}
+            <div className="relative inline-flex items-center" ref={deliveryDropdownRef}>
+              <div
+                className={`status-tab px-3.5 py-3 border-b-2 transition-colors flex items-center gap-1 cursor-pointer ${
+                  activeTab === 'DELIVERY_PHASE'
+                    ? 'border-primary text-primary font-semibold'
+                    : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                {/* Phần chữ bấm vào lọc Mặc định: Tất cả đang giao / chờ nhận */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('DELIVERY_PHASE');
+                    setDeliveryTabSubFilter('ALL');
+                    setIsDeliveryDropdownOpen(false);
+                    setCurrentPage(1);
+                  }}
+                  className="cursor-pointer hover:underline flex items-center gap-1.5"
+                >
+                  <span>
+                    {deliveryTabSubFilter === 'SHIPPING'
+                      ? 'Bưu tá đang giao'
+                      : deliveryTabSubFilter === 'READY_FOR_PICKUP'
+                      ? 'Chờ tại showroom'
+                      : 'Đang giao'}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
+                      activeTab === 'DELIVERY_PHASE'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-surface-container text-on-surface-variant'
+                    }`}
+                  >
+                    {deliveryTabSubFilter === 'SHIPPING'
+                      ? statusTabCounts.SHIPPING
+                      : deliveryTabSubFilter === 'READY_FOR_PICKUP'
+                      ? statusTabCounts.READY_FOR_PICKUP
+                      : statusTabCounts.DELIVERY_PHASE}
+                  </span>
+                </button>
+
+                {/* Nút mũi tên mở Droplist */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDeliveryDropdownOpen((prev) => !prev);
+                  }}
+                  className="p-0.5 hover:bg-surface-container rounded cursor-pointer text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center ml-0.5"
+                  title="Chọn xem tất cả, bưu tá giao hoặc chờ nhận showroom"
+                >
+                  <span
+                    className={`material-symbols-outlined text-[18px] transition-transform duration-150 ${
+                      isDeliveryDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  >
+                    arrow_drop_down
+                  </span>
+                </button>
+              </div>
+
+              {/* Menu Droplist */}
+              {isDeliveryDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 bg-surface-container-lowest rounded-lg border border-outline-variant/30 shadow-xl py-1.5 z-40 min-w-[220px] text-xs animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-3 py-1 text-[10px] uppercase font-bold text-on-surface-variant tracking-wider border-b border-outline-variant/20 mb-1">
+                    Giai đoạn giao / nhận
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('DELIVERY_PHASE');
+                      setDeliveryTabSubFilter('ALL');
+                      setIsDeliveryDropdownOpen(false);
+                      setCurrentPage(1);
+                    }}
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'ALL'
+                        ? 'text-primary font-semibold bg-primary/5'
+                        : 'text-on-surface'
+                    }`}
+                  >
+                    <span>Tất cả đang giao / chờ nhận</span>
+                    <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
+                      {statusTabCounts.DELIVERY_PHASE}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('DELIVERY_PHASE');
+                      setDeliveryTabSubFilter('SHIPPING');
+                      setIsDeliveryDropdownOpen(false);
+                      setCurrentPage(1);
+                    }}
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'SHIPPING'
+                        ? 'text-primary font-semibold bg-primary/5'
+                        : 'text-on-surface'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[15px] text-primary">
+                        local_shipping
+                      </span>
+                      <span>Bưu tá đang giao</span>
+                    </span>
+                    <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
+                      {statusTabCounts.SHIPPING}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('DELIVERY_PHASE');
+                      setDeliveryTabSubFilter('READY_FOR_PICKUP');
+                      setIsDeliveryDropdownOpen(false);
+                      setCurrentPage(1);
+                    }}
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'READY_FOR_PICKUP'
+                        ? 'text-primary font-semibold bg-primary/5'
+                        : 'text-on-surface'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[15px] text-amber-700">
+                        storefront
+                      </span>
+                      <span>Chờ nhận tại showroom</span>
+                    </span>
+                    <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
+                      {statusTabCounts.READY_FOR_PICKUP}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Nhóm Tab kết thúc: Đã hoàn thành, Đã hủy */}
+            {[
               { key: 'COMPLETED', label: 'Đã hoàn thành' },
               { key: 'CANCELED', label: 'Đã hủy' },
             ].map((tab) => {
@@ -808,32 +1010,10 @@ export const AdminOrdersPage = () => {
                             </span>
                           </button>
                         </div>
-                        {activeTab === 'COMPLETED' && order.completedAt ? (
-                          <div className="mt-1 space-y-0.5">
-                            <div className="text-[11px] text-emerald-800 font-medium flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[13px]">task_alt</span>
-                              <span>Xong: {formatDate(order.completedAt)}</span>
-                            </div>
-                            <div className="text-[10px] text-on-surface-variant font-mono opacity-70">
-                              Đặt: {formatDate(order.createdAt)}
-                            </div>
-                          </div>
-                        ) : activeTab === 'CANCELED' && order.canceledAt ? (
-                          <div className="mt-1 space-y-0.5">
-                            <div className="text-[11px] text-error font-medium flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[13px]">cancel</span>
-                              <span>Hủy: {formatDate(order.canceledAt)}</span>
-                            </div>
-                            <div className="text-[10px] text-on-surface-variant font-mono opacity-70">
-                              Đặt: {formatDate(order.createdAt)}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="text-[11px] text-on-surface-variant mt-1 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[13px]">schedule</span>
-                            <span>{formatDate(order.createdAt)}</span>
-                          </div>
-                        )}
+                        <div className="text-[11px] text-on-surface-variant mt-1 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">schedule</span>
+                          <span>{formatDate(order.createdAt)}</span>
+                        </div>
                       </td>
 
                       {/* Cột 2: Khách hàng */}
@@ -908,7 +1088,7 @@ export const AdminOrdersPage = () => {
                         </button>
                       </td>
 
-                      {/* Cột 5: Trạng thái đơn (OrderStatus - Badge Tĩnh) */}
+                      {/* Cột 5: Trạng thái đơn (OrderStatus) & Mốc thời gian */}
                       <td className="py-4 px-4 align-top">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold ${
@@ -918,6 +1098,26 @@ export const AdminOrdersPage = () => {
                           <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
                           <span>{STATUS_LABELS[order.orderStatus] || order.orderStatus}</span>
                         </span>
+
+                        {/* Mốc thời gian theo trạng thái */}
+                        {order.orderStatus === 'COMPLETED' && order.completedAt && (
+                          <div className="text-[11px] text-emerald-800 font-mono mt-1 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">task_alt</span>
+                            <span>Xong: {formatDate(order.completedAt)}</span>
+                          </div>
+                        )}
+                        {order.orderStatus === 'CANCELED' && order.canceledAt && (
+                          <div className="text-[11px] text-error font-mono mt-1 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">cancel</span>
+                            <span>Hủy: {formatDate(order.canceledAt)}</span>
+                          </div>
+                        )}
+                        {order.orderStatus === 'SHIPPING' && order.shippedAt && (
+                          <div className="text-[11px] text-blue-800 font-mono mt-1 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">local_shipping</span>
+                            <span>Giao: {formatDate(order.shippedAt)}</span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Cột 6: Thao tác theo quy trình (Căn giữa, Icon thuần) */}
