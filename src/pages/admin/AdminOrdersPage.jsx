@@ -725,9 +725,9 @@ export const AdminOrdersPage = () => {
       {/* ========================================================= */}
       {/* 3. PRIMARY INTERACTIVE ORDERS CONTAINER (CHUẨN MASTER TABLE)*/}
       {/* ========================================================= */}
-      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-xs flex flex-col overflow-hidden w-full mt-8">
+      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-xs flex flex-col w-full mt-8 relative">
         {/* OrderStatus Tabs Bar */}
-        <div className="px-6 pt-4 border-b border-outline-variant/30 flex items-center justify-between gap-4 overflow-x-auto scrollbar-none">
+        <div className="px-6 pt-4 border-b border-outline-variant/30 flex items-center justify-between gap-4 relative z-20">
           <div className="flex items-center space-x-1 sm:space-x-2 text-sm font-medium whitespace-nowrap min-w-max">
             {/* Nhóm Tab ban đầu: Tất cả, Chờ xác nhận, Đang chuẩn bị */}
             {[
@@ -814,11 +814,11 @@ export const AdminOrdersPage = () => {
                     e.stopPropagation();
                     setIsDeliveryDropdownOpen((prev) => !prev);
                   }}
-                  className="p-0.5 hover:bg-surface-container rounded cursor-pointer text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center ml-0.5"
+                  className="p-1 hover:bg-surface-container rounded-md cursor-pointer text-on-surface-variant hover:text-primary transition-all flex items-center justify-center ml-0.5 outline-none border-none focus:outline-none focus:ring-0 focus-visible:outline-none"
                   title="Chọn xem tất cả, bưu tá giao hoặc chờ nhận showroom"
                 >
                   <span
-                    className={`material-symbols-outlined text-[18px] transition-transform duration-150 ${
+                    className={`material-symbols-outlined text-[18px] transition-transform duration-150 select-none ${
                       isDeliveryDropdownOpen ? 'rotate-180' : ''
                     }`}
                   >
@@ -829,7 +829,7 @@ export const AdminOrdersPage = () => {
 
               {/* Menu Droplist */}
               {isDeliveryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 bg-surface-container-lowest rounded-lg border border-outline-variant/30 shadow-xl py-1.5 z-40 min-w-[220px] text-xs animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-1 bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xl py-1.5 z-50 min-w-[250px] text-xs animate-in fade-in zoom-in-95 duration-100">
                   <div className="px-3 py-1 text-[10px] uppercase font-bold text-on-surface-variant tracking-wider border-b border-outline-variant/20 mb-1">
                     Giai đoạn giao / nhận
                   </div>
@@ -847,7 +847,12 @@ export const AdminOrdersPage = () => {
                         : 'text-on-surface'
                     }`}
                   >
-                    <span>Tất cả đang giao / chờ nhận</span>
+                    <span className="flex items-center gap-1.5">
+                      {activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'ALL' && (
+                        <span className="material-symbols-outlined text-[14px] text-primary">check</span>
+                      )}
+                      <span>Tất cả đang giao / chờ nhận</span>
+                    </span>
                     <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
                       {statusTabCounts.DELIVERY_PHASE}
                     </span>
@@ -868,9 +873,13 @@ export const AdminOrdersPage = () => {
                     }`}
                   >
                     <span className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[15px] text-primary">
-                        local_shipping
-                      </span>
+                      {activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'SHIPPING' ? (
+                        <span className="material-symbols-outlined text-[14px] text-primary">check</span>
+                      ) : (
+                        <span className="material-symbols-outlined text-[15px] text-primary">
+                          local_shipping
+                        </span>
+                      )}
                       <span>Bưu tá đang giao</span>
                     </span>
                     <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
@@ -893,9 +902,13 @@ export const AdminOrdersPage = () => {
                     }`}
                   >
                     <span className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[15px] text-amber-700">
-                        storefront
-                      </span>
+                      {activeTab === 'DELIVERY_PHASE' && deliveryTabSubFilter === 'READY_FOR_PICKUP' ? (
+                        <span className="material-symbols-outlined text-[14px] text-primary">check</span>
+                      ) : (
+                        <span className="material-symbols-outlined text-[15px] text-amber-700">
+                          storefront
+                        </span>
+                      )}
                       <span>Chờ nhận tại showroom</span>
                     </span>
                     <span className="font-mono px-1.5 py-0.5 rounded bg-surface-container text-[11px]">
