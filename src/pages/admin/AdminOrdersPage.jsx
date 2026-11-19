@@ -981,9 +981,8 @@ export const AdminOrdersPage = () => {
                             </span>
                           </button>
                         </div>
-                        <div className="text-[11px] text-on-surface-variant mt-1 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px]">schedule</span>
-                          <span>{formatDate(order.createdAt)}</span>
+                        <div className="text-[11px] text-on-surface-variant mt-1">
+                          {formatDate(order.createdAt)}
                         </div>
                       </td>
 
@@ -1000,16 +999,13 @@ export const AdminOrdersPage = () => {
                       {/* Cột 3: Hình thức & Đơn vị VC */}
                       <td className="py-4 px-4 align-top">
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold ${
+                          className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold ${
                             isPickup
                               ? 'bg-secondary-fixed text-on-secondary-fixed'
                               : 'bg-primary/10 text-primary'
                           }`}
                         >
-                          <span className="material-symbols-outlined text-[13px]">
-                            {isPickup ? 'storefront' : 'local_shipping'}
-                          </span>
-                          <span>{isPickup ? 'Nhận tại xưởng' : 'Giao tận nơi'}</span>
+                          {isPickup ? 'Nhận tại xưởng' : 'Giao tận nơi'}
                         </span>
 
                         {!isPickup && (
@@ -1033,16 +1029,13 @@ export const AdminOrdersPage = () => {
                         </div>
                         <div className="mt-1 flex items-center gap-1.5">
                           <span
-                            className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
                               isPaid
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : 'bg-amber-100 text-amber-900'
                             }`}
                           >
-                            <span className="material-symbols-outlined text-[12px]">
-                              {isPaid ? 'check_circle' : 'schedule'}
-                            </span>
-                            <span>{order.paymentStatus}</span>
+                            {order.paymentStatus}
                           </span>
                           <span className="text-[10px] text-on-surface-variant font-mono bg-surface-container px-1.5 py-0.5 rounded">
                             {order.paymentMethod}
@@ -1052,10 +1045,9 @@ export const AdminOrdersPage = () => {
                         <button
                           type="button"
                           onClick={() => togglePaymentStatus(order)}
-                          className="mt-1.5 text-[10px] text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 underline decoration-dotted cursor-pointer"
+                          className="mt-1.5 text-[10px] text-on-surface-variant hover:text-primary transition-colors block underline decoration-dotted cursor-pointer"
                         >
-                          <span className="material-symbols-outlined text-[11px]">sync_alt</span>
-                          <span>Đổi {isPaid ? 'UNPAID' : 'PAID'}</span>
+                          Đổi {isPaid ? 'UNPAID' : 'PAID'}
                         </button>
                       </td>
 
