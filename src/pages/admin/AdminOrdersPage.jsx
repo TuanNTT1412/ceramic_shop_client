@@ -848,12 +848,7 @@ export const AdminOrdersPage = () => {
                         : 'text-on-surface'
                     }`}
                   >
-                    <span className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
-                        local_shipping
-                      </span>
-                      <span>Bưu tá đang giao</span>
-                    </span>
+                    <span>Bưu tá đang giao</span>
                     <span className="font-mono text-on-surface-variant text-[11px]">
                       {statusTabCounts.SHIPPING}
                     </span>
@@ -873,12 +868,7 @@ export const AdminOrdersPage = () => {
                         : 'text-on-surface'
                     }`}
                   >
-                    <span className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
-                        storefront
-                      </span>
-                      <span>Chờ nhận tại showroom</span>
-                    </span>
+                    <span>Chờ nhận tại showroom</span>
                     <span className="font-mono text-on-surface-variant text-[11px]">
                       {statusTabCounts.READY_FOR_PICKUP}
                     </span>
@@ -1082,21 +1072,18 @@ export const AdminOrdersPage = () => {
 
                         {/* Mốc thời gian theo trạng thái */}
                         {order.orderStatus === 'COMPLETED' && order.completedAt && (
-                          <div className="text-[11px] text-emerald-800 font-mono mt-1 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[13px]">task_alt</span>
-                            <span>Xong: {formatDate(order.completedAt)}</span>
+                          <div className="text-[11px] text-emerald-800 font-mono mt-1">
+                            Xong: {formatDate(order.completedAt)}
                           </div>
                         )}
                         {order.orderStatus === 'CANCELED' && order.canceledAt && (
-                          <div className="text-[11px] text-error font-mono mt-1 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[13px]">cancel</span>
-                            <span>Hủy: {formatDate(order.canceledAt)}</span>
+                          <div className="text-[11px] text-error font-mono mt-1">
+                            Hủy: {formatDate(order.canceledAt)}
                           </div>
                         )}
                         {order.orderStatus === 'SHIPPING' && order.shippedAt && (
-                          <div className="text-[11px] text-blue-800 font-mono mt-1 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[13px]">local_shipping</span>
-                            <span>Giao: {formatDate(order.shippedAt)}</span>
+                          <div className="text-[11px] text-blue-800 font-mono mt-1">
+                            Giao: {formatDate(order.shippedAt)}
                           </div>
                         )}
                       </td>
