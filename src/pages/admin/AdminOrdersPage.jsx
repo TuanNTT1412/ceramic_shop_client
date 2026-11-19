@@ -916,15 +916,15 @@ export const AdminOrdersPage = () => {
 
         {/* Table View of Orders */}
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-left text-xs font-body">
+          <table className="w-full text-left text-xs font-body table-fixed min-w-[1050px]">
             <thead className="bg-surface-container-low text-on-surface-variant font-label uppercase tracking-wider text-[11px] border-b border-outline-variant/30 select-none">
               <tr>
-                <th className="py-3.5 px-5 font-semibold">Mã đơn &amp; Ngày tạo</th>
-                <th className="py-3.5 px-4 font-semibold">Khách hàng</th>
-                <th className="py-3.5 px-4 font-semibold">Hình thức &amp; Đơn vị VC</th>
-                <th className="py-3.5 px-4 font-semibold">Tổng tiền &amp; Thanh toán</th>
-                <th className="py-3.5 px-4 font-semibold">Trạng thái đơn (OrderStatus)</th>
-                <th className="py-3.5 px-4 font-semibold text-center w-28">Thao tác</th>
+                <th className="py-3.5 px-5 font-semibold w-[18%]">Mã đơn &amp; Ngày tạo</th>
+                <th className="py-3.5 px-4 font-semibold w-[22%]">Khách hàng</th>
+                <th className="py-3.5 px-4 font-semibold w-[18%]">Hình thức &amp; Đơn vị VC</th>
+                <th className="py-3.5 px-4 font-semibold w-[17%]">Tổng tiền &amp; Thanh toán</th>
+                <th className="py-3.5 px-4 font-semibold w-[15%]">Trạng thái đơn (OrderStatus)</th>
+                <th className="py-3.5 px-4 font-semibold text-center w-[10%] min-w-[110px]">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20 font-body">
