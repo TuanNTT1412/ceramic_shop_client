@@ -784,10 +784,10 @@ export const AdminOrdersPage = () => {
               >
                 <span>
                   {deliveryTabSubFilter === 'SHIPPING'
-                    ? 'Đang giao (Bưu tá)'
+                    ? 'Bưu tá đang giao'
                     : deliveryTabSubFilter === 'READY_FOR_PICKUP'
-                    ? 'Chờ tại showroom'
-                    : 'Đang giao'}
+                    ? 'Chờ nhận showroom'
+                    : 'Đang giao / Chờ nhận'}
                 </span>
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
@@ -828,7 +828,7 @@ export const AdminOrdersPage = () => {
                         : 'text-on-surface'
                     }`}
                   >
-                    <span>Tất cả đơn giao</span>
+                    <span>Tất cả (Giao &amp; Chờ nhận)</span>
                     <span className="font-mono text-on-surface-variant text-[11px]">
                       {statusTabCounts.DELIVERY_PHASE}
                     </span>
